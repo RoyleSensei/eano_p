@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Home -Eano Community</title>
+    <title>Eano Community User Profile</title>
     <script type="text/javascript"> (function () {
         var css = document.createElement('link');
         css.href = 'https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css';
@@ -13,8 +13,8 @@
         css.type = 'text/css';
         document.getElementsByTagName('head')[0].appendChild(css);
     })(); </script>
-    <link rel="stylesheet" href="static/css/app.css">
-    <link rel="stylesheet" href="static/css/theme.css">
+    <link rel="stylesheet" href="../static/css/app.css">
+    <link rel="stylesheet" href="../static/css/theme.css">
 
 </head>
 
@@ -53,11 +53,11 @@
                 <a class="nav-link active" href="/">Home</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/post">Post</a>
+                <a class="nav-link" href="post.html">Post</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/user_profile"><img class="rounded-circle mr-2" src="static/img/av.png"
-                                                                  width="30"><span class="align-middle">{{ username }}</span></a>
+                <a class="nav-link" href="/user_profile"><img class="rounded-circle mr-2" src="{{ avatar_url }}" style="object-fit : cover" height="30" width="30">
+                    <span class="align-middle">{{ username }}</span></a>
             </li>
             <li class="nav-item dropdown">
                 <a class="nav-link" href="#" id="dropdown02" data-toggle="dropdown" aria-haspopup="true"
@@ -82,49 +82,47 @@
 </nav>
 <main role="main">
 
-
-    <section class="mt-4 mb-5">
-        <div class="container mb-4">
-            <h1 class="font-weight-bold title">Explore</h1>
-            <div class="row">
-                <nav class="navbar navbar-expand-lg navbar-light bg-white pl-2 pr-2">
-                    <button class="navbar-light navbar-toggler" type="button" data-toggle="collapse"
-                            data-target="#navbarsExplore" aria-controls="navbarsDefault" aria-expanded="false"
-                            aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarsExplore">
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Lifestyle</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Food</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Travel</a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="http://example.com" id="dropdown01"
-                                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">More</a>
-                                <div class="dropdown-menu shadow-lg" aria-labelledby="dropdown01">
-                                    <a class="dropdown-item" href="#">Astronomy</a>
-                                    <a class="dropdown-item" href="#">Nature</a>
-                                    <a class="dropdown-item" href="#">Cooking</a>
-                                    <a class="dropdown-item" href="#">Fashion</a>
-                                    <a class="dropdown-item" href="#">Wellness</a>
-                                    <a class="dropdown-item" href="#">Dieting</a>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
-            </div>
+    <div class="jumbotron border-round-0 min-50vh"
+         style="background-image:url(https://images.unsplash.com/photo-1522204657746-fccce0824cfd?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=84b5e9bea51f72c63862a0544f76e0a3&auto=format&fit=crop&w=1500&q=80);">
+    </div>
+    <div class="container mb-4">
+        <img src="{{ avatar_url }}" class="mt-neg100 mb-4 rounded-circle" style="object-fit : cover" height="128" width="128">
+        <h1 class="font-weight-bold title">{{ username }}</h1>
+        <p height="10">
+            {{ aboutyou }}
+        </p>
+        <div class="row">
+            <nav class="navbar navbar-expand-lg navbar-light bg-white pl-2 pr-2">
+                <button class="navbar-light navbar-toggler" type="button" data-toggle="collapse"
+                        data-target="#navbarsExplore" aria-controls="navbarsDefault" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarsExplore">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="?nav=posts">Posts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="?nav=create">Create</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="?nav=following">Following</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="?nav=followers">Followers</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="?nav=edit">Edit Profile</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
         </div>
-        <div class="container-fluid">
+    </div>
+
+    {% if nav == "posts" %}
+        <div class="container-fluid mb-5">
             <div class="row">
                 <div class="card-columns">
                     <div class="card card-pin">
@@ -132,7 +130,7 @@
                              src="https://images.unsplash.com/photo-1489743342057-3448cc7c3bb9?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=6d284a2efbca5f89528546307f7e7b87&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -144,7 +142,7 @@
                              src="https://images.unsplash.com/photo-1519996521430-02b798c1d881?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=79f770fc1a5d8ff9b0eb033d0f09e15d&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -156,7 +154,7 @@
                              src="https://images.unsplash.com/photo-1505210512658-3ae58ae08744?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=2ef2e23adda7b89a804cf232f57e3ca3&auto=format&fit=crop&w=333&q=80"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -168,7 +166,7 @@
                              src="https://images.unsplash.com/photo-1488353816557-87cd574cea04?ixlib=rb-0.3.5&s=06371203b2e3ad3e241c45f4e149a1b3&auto=format&fit=crop&w=334&q=80"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -180,7 +178,7 @@
                              src="https://images.unsplash.com/photo-1518450757707-d21c8c53c8df?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=c88b5f311958f841525fdb01ab3b5deb&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -192,7 +190,7 @@
                              src="https://images.unsplash.com/photo-1483190656465-2c49e54d29f3?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=7c4d831daffc28f6ce144ae9e44072e2&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -204,7 +202,7 @@
                              src="https://images.unsplash.com/photo-1501813531019-338a4182efb0?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=ad934c7483b928cae6b0b9cde5ae3445&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -216,7 +214,7 @@
                              src="https://images.unsplash.com/photo-1518542331925-4e91e9aa0074?ixlib=rb-0.3.5&s=6958cfb3469de1e681bf17587bed53be&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -228,7 +226,7 @@
                              src="https://images.unsplash.com/photo-1513028179155-324cfec2566c?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=32ce1df4016dadc177d6fce1b2df2429&auto=format&fit=crop&w=350&q=80"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -240,7 +238,7 @@
                              src="https://images.unsplash.com/photo-1516601255109-506725109807?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=ce4f3db9818f60686e8e9b62d4920ce5&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -252,7 +250,7 @@
                              src="https://images.unsplash.com/photo-1509233631037-deb7efd36207?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=75a5d784cdfc8f5ced8a6fe26c6d921e&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -264,7 +262,7 @@
                              src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-0.3.5&s=c0043ea5aa03f62a294636f93725dd6e&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -276,7 +274,7 @@
                              src="https://images.unsplash.com/photo-1485627658391-1365e4e0dbfe?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=976b0db5c3c2b9932bb20e72f98f9b61&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -288,7 +286,7 @@
                              src="https://images.unsplash.com/photo-1502550900787-e956c314a221?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=e90f191de3a03c2002ac82c009490e07&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -300,7 +298,7 @@
                              src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=9e3cd6ce6496c9c05cbf1b6cda8be0f9&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -312,7 +310,7 @@
                              src="https://images.unsplash.com/photo-1509885903707-b68568db61ed?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=5f11503655b51165836c2dcefa51a040&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -324,7 +322,7 @@
                              src="https://images.unsplash.com/photo-1518707399486-6d702a84ff00?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=b5bb16fa7eaed1a1ed47614488f7588d&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -336,7 +334,7 @@
                              src="https://images.unsplash.com/photo-1519408299519-b7a0274f7d67?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=d4891b98f4554cc55eab1e4a923cbdb1&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -348,7 +346,7 @@
                              src="https://images.unsplash.com/photo-1506706435692-290e0c5b4505?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=0bb464bb1ceea5155bc079c4f50bc36a&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -360,7 +358,7 @@
                              src="https://images.unsplash.com/photo-1512355144108-e94a235b10af?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=c622d56d975113a08c71c912618b5f83&auto=format&fit=crop&w=500&q=60"
                              alt="Card image">
                         <div class="overlay">
-                            <h2 class="card-title title">Cool Title</h2>
+                            <h2 class="card-title title">Some Title</h2>
                             <div class="more">
                                 <a href="post.html">
                                     <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> More </a>
@@ -370,12 +368,211 @@
                 </div>
             </div>
         </div>
-    </section>
+    {% elif nav == "create" %}
+        <div class="container-fluid mb-5">
+            <form action="/post_creation" method="POST">
+                {#Post Title#}
+                <div class="form-group">
+                    <label for="user_post_title">Title</label>
+                    <input type="text" class="form-control" id="user_post_title">
+                </div>
 
+            </form>
+        </div>
+    {% elif nav == "following" %}
+        <div class="container-fluid mb-5">
+        </div>
+    {% elif nav == "followers" %}
+        <div class="container-fluid mb-5">
+        </div>
+    {% elif nav == "edit" %}
+        <div class="container mb-4">
+            <form class="g-3 needs-validation" action="/user_profile/avatar/" method="POST" enctype = "multipart/form-data">
+                <div class="form-row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label" for="user_profile_avatar">Change Avatar</label>
+                        <div class="input-group">
+                            <input class="form-control" type="file" name="user_profile_avatar" id="user_profile_avatar" required/>
+                            <button class="btn" type="submit">Upload</button>
+                        </div>
+                        <div class="invalid-feedback">Invalid file</div>
+
+                    </div>
+                </div>
+            </form>
+
+            <form class="g-3 needs-validation" action="/user_profile" method="POST" novalidate>
+                <div class="form-row">
+                    {#username#}
+                    <div class="col-md-4 mb-3">
+                        <label for="user_profile_username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="user_profile_username" name="user_profile_username"
+                               value="{{ username }}" required/>
+                        <div class="invalid-feedback">Please choose a username.</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    {#First name#}
+                    <div class="col-md-4 mb-3">
+                        <label for="user_profile_firstname" class="form-label">First name</label>
+                        <input type="text" class="form-control" id="user_profile_firstname"
+                               name="user_profile_firstname" value="{{ firstname }}" required/>
+                        <div class="valid-feedback">Looks good!</div>
+                    </div>
+                    {#Last name#}
+                    <div class="col-md-4 mb-3">
+                        <label for="user_profile_lastname" class="form-label">Last name</label>
+                        <input type="text" class="form-control" id="user_profile_lastname" name="user_profile_lastname"
+                               value="{{ lastname }}" required/>
+                        <div class="valid-feedback">Looks good!</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="user_profile_birthday" class="form-label">Birthday</label>
+                        <input type="date" class="form-control" id="user_profile_birthday" name="user_profile_birthday"
+                               value="{{ birthday }}" required/>
+                        <div class="valid-feedback">Looks good!</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    {#Address#}
+                    <div class="col-md-6 mb-3">
+                        <label for="user_profile_address1">Address</label>
+                        <input type="text" class="form-control" id="user_profile_address1" name="user_profile_address1"
+                               value="{{ address1 }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="user_profile_address2">Address 2</label>
+                        <input type="text" class="form-control" id="user_profile_address2" name="user_profile_address2"
+                               value="{{ address2 }}">
+                    </div>
+                </div>
+                <div class="form-row">
+                    {#city#}
+                    <div class="col-md-6 mb-3">
+                        <label for="user_profile_city" class="form-label">City</label>
+                        <input type="text" class="form-control" id="user_profile_city" name="user_profile_city"
+                               value="{{ city }}" required/>
+                        <div class="invalid-feedback">Please provide a valid city.</div>
+                    </div>
+                    {#state#}
+                    <div class="col-md-3 mb-3">
+                        <label for="user_profile_state">State</label>
+                        <select class="custom-select" id="user_profile_state" name="user_profile_state" required>
+                            <option selected disabled value="">{{ state }}</option>
+                            <option value="AL">Alabama</option>
+                            <option value="AK">Alaska</option>
+                            <option value="AZ">Arizona</option>
+                            <option value="AR">Arkansas</option>
+                            <option value="CA">California</option>
+                            <option value="CO">Colorado</option>
+                            <option value="CT">Connecticut</option>
+                            <option value="DE">Delaware</option>
+                            <option value="DC">District Of Columbia</option>
+                            <option value="FL">Florida</option>
+                            <option value="GA">Georgia</option>
+                            <option value="HI">Hawaii</option>
+                            <option value="ID">Idaho</option>
+                            <option value="IL">Illinois</option>
+                            <option value="IN">Indiana</option>
+                            <option value="IA">Iowa</option>
+                            <option value="KS">Kansas</option>
+                            <option value="KY">Kentucky</option>
+                            <option value="LA">Louisiana</option>
+                            <option value="ME">Maine</option>
+                            <option value="MD">Maryland</option>
+                            <option value="MA">Massachusetts</option>
+                            <option value="MI">Michigan</option>
+                            <option value="MN">Minnesota</option>
+                            <option value="MS">Mississippi</option>
+                            <option value="MO">Missouri</option>
+                            <option value="MT">Montana</option>
+                            <option value="NE">Nebraska</option>
+                            <option value="NV">Nevada</option>
+                            <option value="NH">New Hampshire</option>
+                            <option value="NJ">New Jersey</option>
+                            <option value="NM">New Mexico</option>
+                            <option value="NY">New York</option>
+                            <option value="NC">North Carolina</option>
+                            <option value="ND">North Dakota</option>
+                            <option value="OH">Ohio</option>
+                            <option value="OK">Oklahoma</option>
+                            <option value="OR">Oregon</option>
+                            <option value="PA">Pennsylvania</option>
+                            <option value="RI">Rhode Island</option>
+                            <option value="SC">South Carolina</option>
+                            <option value="SD">South Dakota</option>
+                            <option value="TN">Tennessee</option>
+                            <option value="TX">Texas</option>
+                            <option value="UT">Utah</option>
+                            <option value="VT">Vermont</option>
+                            <option value="VA">Virginia</option>
+                            <option value="WA">Washington</option>
+                            <option value="WV">West Virginia</option>
+                            <option value="WI">Wisconsin</option>
+                            <option value="WY">Wyoming</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select a valid state.
+                        </div>
+                    </div>
+                    {#zipcode#}
+                    <div class="col-md-3 mb-3">
+                        <label for="user_profile_zip" class="form-label">Zip</label>
+                        <input type="text" class="form-control" id="user_profile_zip" name="user_profile_zip"
+                               value="{{ zipcode }}" required/>
+                        <div class="invalid-feedback">Please provide a valid zip.</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    {#About you#}
+                    <div class="col-md-4 mb-3">
+                        <label for="user_profile_aboutyou" class="form-label">About you</label>
+                        <textarea class="form-control" aria-label="With textarea" id="user_profile_aboutyou"
+                                  name="user_profile_aboutyou" required
+                                  maxlength="100">{{ aboutyou }}</textarea>
+                        <div class="valid-feedback">Looks good!</div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col-12 mb-3">
+                        {#Agree to terms#}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="invalidCheck" required/>
+                            <label class="form-check-label" for="invalidCheck"> Agree to terms and conditions </label>
+                            <div class="invalid-feedback">You must agree before submitting.</div>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        {#Submit form#}
+                        <button class="btn btn-primary" type="submit">Submit form</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    {% endif %}
 </main>
 
-<script src="static/js/app.js"></script>
-<script src="static/js/theme.js"></script>
+<script src="../static/js/app.js"></script>
+<script src="../static/js/theme.js"></script>
+<script>
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
 
 <footer class="footer pt-5 pb-5 text-center">
 
@@ -396,13 +593,16 @@
             </ul>
 
         </div>
-
         <p>© <span class="credits font-weight-bold">
             <a target="_blank" class="text-dark"
                href="https://www.eano.com/"><u>Eano</u></a>
           </span>
         </p>
+
+
     </div>
+
 </footer>
 </body>
+
 </html>
