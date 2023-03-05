@@ -14,6 +14,7 @@ from flask import (
 from passlib.hash import pbkdf2_sha256
 from pymongo import MongoClient
 from werkzeug.utils import secure_filename
+from bson.objectid import ObjectId
 
 users = {}
 
@@ -50,7 +51,7 @@ def index():
     return render_template(
         "index.html",
         title="Eano Community",
-        username=session["username"]
+        session=session
     )
 
 
@@ -67,6 +68,7 @@ def login():
         if pbkdf2_sha256.verify(password, user["password_hash"]):
             token = secrets.token_urlsafe(16)
             session["username"] = user["username"]
+            session["avatar_url"] = user["avatar_url"]
             session["email"] = email
             session["token"] = token
             app.db.users.update_one(
@@ -93,6 +95,7 @@ def signup():
             "username": username,
             "email": email,
             "password_hash": pbkdf2_sha256.hash(password),
+            "avatar_url": "/static/img/av.png"
         })
         # TODO handle duplicate email
         # flash("Successfully signed up")
@@ -100,7 +103,17 @@ def signup():
     return render_template("signup.html")
 
 
+@app.route("/logout")
+def logout():
+    app.db.users.update_one({"email": session["email"]},
+                            {"$set": {"token": ""}},
+                            upsert=True
+                            )
+    return redirect(url_for("login"))
+
+
 @app.route('/user_profile/', methods=["GET", "POST"])
+@login_required
 def user_profile():
     nav = request.args.get("nav")
     if nav is None:
@@ -117,7 +130,6 @@ def user_profile():
         state = request.form.get("user_profile_state")
         zipcode = request.form.get("user_profile_zip")
         aboutyou = request.form.get("user_profile_aboutyou")
-
 
         app.db.users.update_one(
             {"email": session["email"]},
@@ -150,9 +162,25 @@ def user_profile():
         kwargs["state"] = "Choose..."
     if "aboutyou" not in kwargs or kwargs["aboutyou"] is None:
         kwargs["aboutyou"] = "How you feel..."
-
     if "avatar_url" not in kwargs or kwargs["avatar_url"] is None:
-        kwargs["avatar_url"] = "../static/img/av.png"
+        kwargs["avatar_url"] = "/static/img/av.png"
+    if "posts" not in kwargs or kwargs["posts"] is None:
+        kwargs["post_cards"] = []
+    else:
+        post_cards = []
+        for pid in user["posts"]:
+            post_card = app.db.posts.find_one({"_id": ObjectId(pid)})
+            post_cards += [post_card]
+        kwargs["post_cards"] = post_cards
+
+    if "followers" not in kwargs or kwargs["followers"] is None:
+        kwargs["follower_cards"] = []
+    else:
+        follower_cards = []
+        for email in user["followers"]:
+            follower_card = app.db.users.find_one({"email": email})
+            follower_cards += follower_card
+        kwargs["follower_cards"] = follower_cards
 
     return render_template(
         "user_profile.html", **kwargs
@@ -160,6 +188,7 @@ def user_profile():
 
 
 @app.route('/user_profile/avatar/', methods=["POST"])
+@login_required
 def upload_avatar():
     target = os.path.join(APP_ROOT, 'static/img/avatars/')  # folder_path
     if not os.path.isdir(target):
@@ -174,15 +203,90 @@ def upload_avatar():
     app.db.users.update_one(
         {"email": session["email"]},
         {"$set": {
-            "avatar_url":  '../static/img/avatars/' + new_filename}},
+            "avatar_url": '/static/img/avatars/' + new_filename}},
         upsert=True)
+    session["avatar_url"] = '/static/img/avatars/' + new_filename
 
     return redirect(url_for("user_profile"))
 
 
-@app.route('/post_creation')
-def create_post():
+@app.route('/post/create', methods=["GET", "POST"])
+@login_required
+def post_create():
+    target = os.path.join(APP_ROOT, 'static/img/post_img/')  # folder_path
+    if not os.path.isdir(target):
+        os.mkdir(target)  # create folder if not exists
+
+    if request.method == "POST":
+        post_img_filename = None
+        for file in request.files.getlist("user_post_img"):
+            suffix = secure_filename(file.filename).split(".")[-1]
+            post_img_filename = str(uuid.uuid4()) + "." + suffix
+            file.save(target + post_img_filename)
+
+        insert_result = app.db.posts.insert_one(
+            {"post_img_url": '/static/img/post_img/' + post_img_filename}
+        )
+        pid = str(insert_result.inserted_id)
+        user = app.db.users.find_one({"email": session["email"]})
+        app.db.users.update_one(
+            {"email": session["email"]},
+            {"$set": {
+                "posts": (user["posts"] if "posts" in user else []) + [pid]
+            }},
+            upsert=True
+        )
+        return redirect(url_for("post_create_continue", pid=pid))
+    return render_template("post_create.html", session=session)
+
+
+@app.route('/post/create/<pid>', methods=["GET", "POST"])
+@login_required
+def post_create_continue(pid):
+    post = app.db.posts.find_one({"_id": ObjectId(pid)})
+
+    if request.method == "POST":
+        if "user_post_img" in request.form:
+            app.db.posts.update_one(
+                {"_id": ObjectId(pid)},
+                {"$set": {
+                    "post_img_url": request.form.get("user_post_img")
+                }}
+            )
+        else:
+            rating = request.form.get("user_post_rating")
+            title = request.form.get("user_post_title")
+            review = request.form.get("user_post_review")
+            app.db.posts.update_one(
+                {"_id": ObjectId(pid)},
+                {"$set": {
+                    "rating": rating,
+                    "title": title,
+                    "review": review
+                }},
+                upsert=True
+            )
+            return redirect(url_for("user_profile", nav="posts"))
+    # return render_template("post_continue.html", pid=pid, post_img_url=post["post_img_url"], session=session)
+    return render_template("post_continue.html", session=session, post_card=post)
+
+
+@app.route('/post/create/confirm')
+@login_required
+def post_create_confirm():
     pass
+
+
+@app.route('/post/<pid>', methods=["GET"])
+@login_required
+def post_view(pid):
+    pass
+
+
+@app.route('/test', methods=["GET", "POST"])
+def test():
+    print(request.form)
+    return render_template('test.html')
 
 
 if __name__ == "__main__":
