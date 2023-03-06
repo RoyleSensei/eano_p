@@ -5,55 +5,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Eano Community Post Create</title>
+    <title>Eano Community Search</title>
     <script type="text/javascript"> (function () {
         var css = document.createElement('link');
         css.href = 'https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css';
         css.rel = 'stylesheet';
         css.type = 'text/css';
         document.getElementsByTagName('head')[0].appendChild(css);
-    })(); </script>
+    })();
+    </script>
     <link rel="stylesheet" href="/static/css/app.css">
     <link rel="stylesheet" href="/static/css/theme.css">
-    <style media="screen">
-        .rating {
-            display: flex;
-            flex-direction: row-reverse;
-            justify-content: left;
-        }
 
-        .rating > input {
-            display: none;
-        }
-
-        .rating > label {
-            position: relative;
-            font-size: 2em;
-            color: #FFD700;
-            cursor: pointer;
-        }
-
-        .rating > label::before {
-            content: "\2605";
-            position: absolute;
-            opacity: 0;
-        }
-
-        .rating > label:hover:before,
-        .rating > label:hover ~ label:before {
-            opacity: 1 !important;
-        }
-
-        .rating > input:checked ~ label:before {
-            opacity: 1;
-        }
-
-        .rating:hover > input:checked ~ label:before {
-            opacity: 0.4;
-        }
-
-
-    </style>
 </head>
 
 <body>
@@ -79,10 +42,11 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarsDefault">
         <ul class="navbar-nav mr-auto align-items-center">
-            <form class="bd-search hidden-sm-down">
-                <input type="text" class="form-control bg-graylight border-0 font-weight-bold" id="search-input"
-                       placeholder="Search..." autocomplete="off">
-                <div class="dropdown-menu bd-search-results" id="search-results">
+            <form class="bd-search hidden-sm-down" action="/search" method="POST">
+                <div class="input-group">
+                    <input type="text" class="form-control bg-graylight border-0 font-weight-bold" id="search-input"
+                           placeholder="Search..." name="keyword" autocomplete="off">
+                    <button class="btn" type="submit">Go</button>
                 </div>
             </form>
         </ul>
@@ -125,119 +89,153 @@
 </nav>
 
 <main role="main">
-
     <section class="mt-4 mb-5">
         <div class="container mb-4">
-            <div class="container">
-                <div class="row">
-                    <div class="col-6 col-md-4"
-                         style="display: flex; align-items: center; justify-content: center; flex-direction: column">
-                        <form class="g-3 needs-validation" action="/post/create/{{ post_card["_id"] }}" method="POST"
-                              novalidate>
-                            <div style="max-width: 540px; display: block; padding-bottom: 20px">
-                                <img src="{{ post_card["post_img_url"] }}" class="center" alt="user_post_img">
-                            </div>
-                            <div>
-                                <div class="input-group">
-                                    <input class="form-control" type="file" name="user_post_img" id="user_post_img"
-                                           required/>
-                                    <button class="btn btn-sm" type="submit">Update</button>
-                                </div>
-                            </div>
-                        </form>
+            <h1 class="font-weight-bold title">Results</h1>
+            <div class="row">
+                <nav class="navbar navbar-expand-lg navbar-light bg-white pl-2 pr-2">
+                    <button class="navbar-light navbar-toggler" type="button" data-toggle="collapse"
+                            data-target="#navbarsExplore" aria-controls="navbarsDefault" aria-expanded="false"
+                            aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarsExplore">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="?nav=posts&keyword={{ keyword }}">Posts</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="?nav=people&keyword={{ keyword }}">People</a>
+                            </li>
+                        </ul>
                     </div>
-
-                    <div class="col-md-6 offset-md-1">
-                        <h1 class="font-weight-bold title" style="text-align: left">Publish your post</h1>
-                        <form class="g-3 needs-validation" action="/post/create/{{ post_card["_id"] }}" method="POST"
-                              novalidate>
-                            <div class="form-group" style="margin-bottom: 0">
-                                <label for="user_post_rating" class="form-label"
-                                       style="margin-bottom: -2em; margin-top: 1em">Ratings<span
-                                        class="require">*</span></label>
-                            </div>
-                            <div class="rating">
-                                <input type="radio" name="user_post_rating" value="5" id="5"><label for="5">☆</label>
-                                <input type="radio" name="user_post_rating" value="4" id="4"><label for="4">☆</label>
-                                <input type="radio" name="user_post_rating" value="3" id="3"><label for="3">☆</label>
-                                <input type="radio" name="user_post_rating" value="2" id="2"><label for="2">☆</label>
-                                <input type="radio" name="user_post_rating" value="1" id="1"><label for="1">☆</label>
-                            </div>
-                            <div class="form-group">
-                                <label for="user_post_title" class="form-label">Title<span
-                                        class="require">*</span></label>
-                                <input type="text" class="form-control" id="user_post_title" name="user_post_title"
-                                       value="{{ post_card["title"] }}"/>
-                            </div>
-                            <div class="form-group">
-                                <label for="user_post_review" class="form-label">Review</label>
-                                <textarea rows="10" class="form-control" id="user_post_review"
-                                          name="user_post_review">{{ post_card["review"] }}</textarea>
-                            </div>
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary">
-                                    Publish
-                                </button>
-                                <button class="btn btn-default" name="cancel" value="true">
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                </nav>
             </div>
         </div>
-        <div class="modal" id="logoutModal" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-primary" style="margin-top: 25em;">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4><i class="fa fa-lock" style="margin-right: 10px"></i>Log Out </h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                aria-hidden="true">×</span></button>
-                    </div>
-                    <div class="modal-body">
-                        <p><i class="fa fa-question-circle"></i> Are you sure you want to log out? <br/></p>
-                        <div class="actionsBtns" style="text-align: center">
-                            <form action="/logout" method="POST">
-                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                                {#                    <button type="submit" class="btn btn-default btn-primary" data-dismiss="modal">Logout</button>#}
-                                <a class="btn btn-primary nav__link" href="/logout" role="button"><span
-                                        class="nav__item">Log out</span></a>
-                                <button class="btn btn-default" data-dismiss="modal">Cancel</button>
-                            </form>
+        {% if nav == "posts" %}
+            {% if post_cards is none or post_cards |length == 0 %}
+                <h1> Nothing </h1>
+            {% else %}
+                <div class="container-fluid mb-5">
+                    <div class="row">
+                        <div class="card-columns">
+                            {% for post_card in post_cards %}
+                                <div class="card card-pin">
+                                    <img class="card-img"
+                                         src="{{ post_card["post_img_url"] }}"
+                                         alt="Card image">
+                                    <div class="overlay">
+                                        <h2 class="card-title title">{{ post_card["title"] }}</h2>
+                                        <div class="more">
+                                            <a class="nav-link" href="/post/{{ post_card["_id"] }}">
+                                                <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> View </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
+            {% endif %}
+        {% elif nav == "people" %}
+            {% if user_cards is none or user_cards |length == 0 %}
+                <h1> Nothing </h1>
+            {% else %}
+                <div class="container">
+                    <div class="container-fluid mb-5" style="margin-left: 0px;">
+                        <div class="row">
+                            {% for user_card in user_cards %}
+                                <div style="border: 1px solid;">
+                                    <div class="card mb-3" style="max-width: 540px;">
+                                    <div class="row no-gutters">
+                                        <div class="col-md-4" style="display: flex; align-items: center; justify-content: center">
+                                            <a href="/" >
+                                            <img src="{{ user_card["avatar_url"] }}" class="rounded-circle"
+                                                 style="object-fit : cover; margin: auto" height="128" width="128"
+                                                 alt="user_avatar"></a>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Card title</h5>
+                                                <p class="card-text">This is a wider card with supporting text below as
+                                                    a natural lead-in to additional content. This content is a little
+                                                    bit longer.</p>
+                                                <p class="card-text"><small class="text-muted">Last updated 3 mins
+                                                    ago</small></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+
+{#                                <div class="card card-pin">#}
+{#                                    <a href="/"><img src="{{ user_card["avatar_url"] }}" class="rounded-circle"#}
+{#                                                     style="object-fit : cover" height="128" width="128"#}
+{#                                                     alt="user_avatar"></a>#}
+{#                                    <button> follow</button>#}
+{#                                </div>#}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+    </section>
+
+    <div class="modal" id="logoutModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-primary" style="margin-top: 25em;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4><i class="fa fa-lock" style="margin-right: 10px"></i>Log Out </h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+                    <p><i class="fa fa-question-circle"></i> Are you sure you want to log out? <br/></p>
+                    <div class="actionsBtns" style="text-align: center">
+                        <form action="/logout" method="POST">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                            {#                    <button type="submit" class="btn btn-default btn-primary" data-dismiss="modal">Logout</button>#}
+                            <a class="btn btn-primary nav__link" href="/logout" role="button"><span class="nav__item">Log out</span></a>
+                            <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
+    </div>
 
 </main>
 
 <script src="/static/js/app.js"></script>
 <script src="/static/js/theme.js"></script>
-<script>
-    (function () {
-        'use strict';
-        window.addEventListener('load', function () {
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            var forms = document.getElementsByClassName('needs-validation');
-            // Loop over them and prevent submission
-            var validation = Array.prototype.filter.call(forms, function (form) {
-                form.addEventListener('submit', function (event) {
-                    if (form.checkValidity() === false) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        }, false);
-    })();
 
-</script>
+<footer class="footer pt-5 pb-5 text-center">
 
+    <div class="container">
 
+        <div class="socials-media">
+
+            <ul class="list-unstyled">
+                <li class="d-inline-block ml-1 mr-1"><a href="https://www.facebook.com/eanovation/" class="text-dark"><i
+                        class="fa fa-facebook"></i></a>
+                </li>
+                <li class="d-inline-block ml-1 mr-1"><a href="https://twitter.com/eano_home_reno" class="text-dark"><i
+                        class="fa fa-twitter"></i></a>
+                </li>
+                <li class="d-inline-block ml-1 mr-1"><a href="https://www.instagram.com/eano_home_renovation/?hl=en"
+                                                        class="text-dark"><i class="fa fa-instagram"></i></a>
+                </li>
+            </ul>
+
+        </div>
+
+        <p>© <span class="credits font-weight-bold">
+            <a target="_blank" class="text-dark"
+               href="https://www.eano.com/"><u>Eano</u></a>
+          </span>
+        </p>
+    </div>
+</footer>
 </body>
-
 </html>

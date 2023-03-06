@@ -41,10 +41,11 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarsDefault">
         <ul class="navbar-nav mr-auto align-items-center">
-            <form class="bd-search hidden-sm-down">
-                <input type="text" class="form-control bg-graylight border-0 font-weight-bold" id="search-input"
-                       placeholder="Search..." autocomplete="off">
-                <div class="dropdown-menu bd-search-results" id="search-results">
+            <form class="bd-search hidden-sm-down" action="/search" method="POST">
+                <div class="input-group">
+                    <input type="text" class="form-control bg-graylight border-0 font-weight-bold" id="search-input"
+                           placeholder="Search..." name="keyword" autocomplete="off">
+                    <button class="btn" type="submit">Go</button>
                 </div>
             </form>
         </ul>
@@ -77,7 +78,8 @@
                 </a>
                 <div class="dropdown-menu dropdown-menu-right shadow-lg" aria-labelledby="dropdown02">
                     <span class="dropdown-item">
-                        <a href="/logout" class="btn btn-primary d-block" data-toggle="modal" data-target="#logoutModal">logout</a>
+                        <a href="/logout" class="btn btn-primary d-block" data-toggle="modal"
+                           data-target="#logoutModal">logout</a>
                     </span>
                 </div>
             </li>
@@ -92,7 +94,8 @@
                 background-size: cover">
     </div>
     <div class="container mb-4">
-        <img src="{{ avatar_url }}" class="mt-neg100 mb-4 rounded-circle" style="object-fit : cover" height="128" width="128">
+        <img src="{{ avatar_url }}" class="mt-neg100 mb-4 rounded-circle" style="object-fit : cover" height="128"
+             width="128">
         <h1 class="font-weight-bold title">{{ username }}</h1>
         <p>
             {{ aboutyou }}
@@ -133,17 +136,22 @@
                 <div class="card-columns">
                     {% for post_card in post_cards %}
                         <div class="card card-pin">
-                        <img class="card-img"
-                             src="{{ post_card["post_img_url"] }}"
-                             alt="Card image">
-                        <div class="overlay">
-                            <h2 class="card-title title">{{ post_card["title"] }}</h2>
-                            <div class="more">
-                                <a class="nav-link" href="/post/create/{{ post_card["_id"] }}">
-                                <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> Edit </a>
+                            <img class="card-img"
+                                 src="{{ post_card["post_img_url"] }}"
+                                 alt="Card image">
+                            <div class="overlay">
+                                <h2 class="card-title title">{{ post_card["title"] }}</h2>
+                                <div class="more form-row">
+                                    <a href="/post/create/{{ post_card["_id"] }}" style="padding-right: 5px">
+                                        <button class="btn btn-sm" aria-hidden="true">Edit</button></a>
+                                    <form class="delete_post" action="/post/{{ post_card["_id"] }}" method="POST" novalidate>
+                                        <button class="btn btn-sm" name="delete" value="true">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
                     {% endfor %}
                 </div>
             </div>
@@ -157,12 +165,13 @@
                     <input type="text" class="form-control" id="user_post_title">
                 </div>
             </form>
-            <form class="g-3 needs-validation" action="/post/img" method="POST" enctype = "multipart/form-data">
+            <form class="g-3 needs-validation" action="/post/img" method="POST" enctype="multipart/form-data">
                 <div class="form-row">
                     <div class="col-md-4 mb-3">
                         <label class="form-label" for="user_profile_avatar">Change Avatar</label>
                         <div class="input-group">
-                            <input class="form-control" type="file" name="user_profile_avatar" id="user_profile_avatar" style="display: none" required/>
+                            <input class="form-control" type="file" name="user_profile_avatar" id="user_profile_avatar"
+                                   style="display: none" required/>
                             <button class="btn" type="submit">Upload</button>
                         </div>
                         <div class="invalid-feedback">Invalid file</div>
@@ -175,25 +184,29 @@
         <div class="container-fluid mb-5">
         </div>
     {% elif nav == "followers" %}
-        <div class="container-fluid mb-5">
-            <div class="row">
-                {% for follower_card in follower_cards %}
-                <div class="card card-pin">
-                    <img src="{{ follower_card["avatar_url"] }}" class="rounded_cr" alt="user_avatar">
-                    <button> unfollow </button>
-                    <button> visit page </button>
+        <div class="container">
+            <div class="container-fluid mb-5">
+                <div class="row">
+                    {% for follower_card in follower_cards %}
+                        <div class="card card-pin">
+                            <img src="{{ follower_card["avatar_url"] }}" class="rounded_cr" alt="user_avatar">
+                            <button> unfollow</button>
+                            <button> visit page</button>
+                        </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
         </div>
     {% elif nav == "edit" %}
         <div class="container mb-4">
-            <form class="g-3 needs-validation" action="/user_profile/avatar/" method="POST" enctype = "multipart/form-data">
+            <form class="g-3 needs-validation" action="/user_profile/avatar/" method="POST"
+                  enctype="multipart/form-data">
                 <div class="form-row">
                     <div class="col-md-4 mb-3">
                         <label class="form-label" for="user_profile_avatar">Change Avatar</label>
                         <div class="input-group">
-                            <input class="form-control" type="file" name="user_profile_avatar" id="user_profile_avatar" required/>
+                            <input class="form-control" type="file" name="user_profile_avatar" id="user_profile_avatar"
+                                   required/>
                             <button class="btn" type="submit">Upload</button>
                         </div>
                         <div class="invalid-feedback">Invalid file</div>
@@ -352,25 +365,26 @@
     {% endif %}
 
     <div class="modal" id="logoutModal" tabindex="-1" role="dialog" aria-hidden="true">
-      <div class="modal-dialog modal-primary" style="margin-top: 25em;">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4><i class="fa fa-lock" style="margin-right: 10px"></i>Log Out </h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
-          </div>
-          <div class="modal-body">
-            <p><i class="fa fa-question-circle"></i> Are you sure you want to log out? <br /></p>
-            <div class="actionsBtns" style="text-align: center">
-                <form action="/logout" method="POST">
-                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-{#                    <button type="submit" class="btn btn-default btn-primary" data-dismiss="modal">Logout</button>#}
-                    <a class="btn btn-primary nav__link" href="/logout" role="button"><span class="nav__item">Log out</span></a>
-                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
-                </form>
+        <div class="modal-dialog modal-primary" style="margin-top: 25em;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4><i class="fa fa-lock" style="margin-right: 10px"></i>Log Out </h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+                    <p><i class="fa fa-question-circle"></i> Are you sure you want to log out? <br/></p>
+                    <div class="actionsBtns" style="text-align: center">
+                        <form action="/logout" method="POST">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                            {#                    <button type="submit" class="btn btn-default btn-primary" data-dismiss="modal">Logout</button>#}
+                            <a class="btn btn-primary nav__link" href="/logout" role="button"><span class="nav__item">Log out</span></a>
+                            <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        </form>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
 
 </main>
@@ -401,11 +415,14 @@
     <div class="container">
         <div class="socials-media">
             <ul class="list-unstyled">
-                <li class="d-inline-block ml-1 mr-1"><a href="https://www.facebook.com/eanovation/" class="text-dark"><i class="fa fa-facebook"></i></a>
+                <li class="d-inline-block ml-1 mr-1"><a href="https://www.facebook.com/eanovation/" class="text-dark"><i
+                        class="fa fa-facebook"></i></a>
                 </li>
-                <li class="d-inline-block ml-1 mr-1"><a href="https://twitter.com/eano_home_reno" class="text-dark"><i class="fa fa-twitter"></i></a>
+                <li class="d-inline-block ml-1 mr-1"><a href="https://twitter.com/eano_home_reno" class="text-dark"><i
+                        class="fa fa-twitter"></i></a>
                 </li>
-                <li class="d-inline-block ml-1 mr-1"><a href="https://www.instagram.com/eano_home_renovation/?hl=en" class="text-dark"><i class="fa fa-instagram"></i></a>
+                <li class="d-inline-block ml-1 mr-1"><a href="https://www.instagram.com/eano_home_renovation/?hl=en"
+                                                        class="text-dark"><i class="fa fa-instagram"></i></a>
                 </li>
             </ul>
 

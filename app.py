@@ -246,7 +246,10 @@ def post_create_continue(pid):
     post = app.db.posts.find_one({"_id": ObjectId(pid)})
 
     if request.method == "POST":
-        if "user_post_img" in request.form:
+        if "cancel" in request.form:
+            return redirect(url_for("user_profile", nav="posts"))
+
+        elif "user_post_img" in request.form:
             app.db.posts.update_one(
                 {"_id": ObjectId(pid)},
                 {"$set": {
@@ -271,16 +274,49 @@ def post_create_continue(pid):
     return render_template("post_continue.html", session=session, post_card=post)
 
 
-@app.route('/post/create/confirm')
-@login_required
-def post_create_confirm():
-    pass
-
-
-@app.route('/post/<pid>', methods=["GET"])
+@app.route('/post/<pid>', methods=["GET", "POST"])
 @login_required
 def post_view(pid):
+    if request.method == "POST":
+        if "delete" in request.form:
+            app.db.posts.delete_one(
+                {"_id": ObjectId(pid)}
+            )
+            user = app.db.users.find_one(
+                {"email": session["email"]}
+            )
+            user["posts"].remove(pid)
+            app.db.users.update_one(
+                {"email": session["email"]},
+                {"$set": {
+                    "posts": user["posts"]
+                }}
+            )
+            return redirect(url_for("user_profile", nav="posts"))
+    #TODO:
     pass
+
+
+@app.route('/search', methods=["POST", "GET"])
+@login_required
+def search_result():
+    if request.method == "POST":
+        keyword = request.form.get("keyword")
+        return redirect("/search?nav=posts&keyword=" + keyword)
+    else:
+        nav = request.args.get("nav")
+        if nav is None:
+            nav = "posts"
+
+        keyword = request.args.get("keyword")
+        if keyword is None:
+            keyword = ""
+        post_cards = [_ for _ in app.db.posts.find({"title": {'$regex': ".*" + keyword + ".*", "$options": "i"}})]
+        user_cards = [_ for _ in app.db.users.find({"username": {'$regex': ".*" + keyword + ".*", "$options": "i"}})]
+
+        return render_template("search_result.html", nav=nav, keyword=keyword, post_cards=post_cards,
+                               user_cards=user_cards,
+                               session=session)
 
 
 @app.route('/test', methods=["GET", "POST"])
