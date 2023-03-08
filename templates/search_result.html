@@ -114,7 +114,12 @@
         </div>
         {% if nav == "posts" %}
             {% if post_cards is none or post_cards |length == 0 %}
-                <h1> Nothing </h1>
+                <div class="container-fluid mb-5">
+                    <div class="row" style="display: flex; align-items: center; justify-content: center;">
+                        <h3> Nothing related found here... </h3>
+                    </div>
+                </div>
+
             {% else %}
                 <div class="container-fluid mb-5">
                     <div class="row">
@@ -136,46 +141,42 @@
                         </div>
                     </div>
                 </div>
+
             {% endif %}
         {% elif nav == "people" %}
             {% if user_cards is none or user_cards |length == 0 %}
-                <h1> Nothing </h1>
+                <div class="container-fluid mb-5">
+                    <div class="row" style="display: flex; align-items: center; justify-content: center;">
+                        <h3> Nobody found here... </h3>
+                    </div>
+                </div>
             {% else %}
-                <div class="container">
-                    <div class="container-fluid mb-5" style="margin-left: 0px;">
-                        <div class="row">
-                            {% for user_card in user_cards %}
-                                <div style="border: 1px solid;">
-                                    <div class="card mb-3" style="max-width: 540px;">
+                <div class="container-fluid mb-5" >
+                    <div class="row">
+                        {% for user_card in user_cards %}
+                            <div class="rounded" style="border: 2px solid rgba(178,178,178, 0.2); margin-right: 1em">
+                                <div class="card mb-3" style="max-width: 350px; min-width: 350px">
                                     <div class="row no-gutters">
-                                        <div class="col-md-4" style="display: flex; align-items: center; justify-content: center">
-                                            <a href="/" >
-                                            <img src="{{ user_card["avatar_url"] }}" class="rounded-circle"
-                                                 style="object-fit : cover; margin: auto" height="128" width="128"
-                                                 alt="user_avatar"></a>
+                                        <div class="col-md-4"
+                                             style="display: flex; align-items: center; justify-content: center">
+                                            <a href="/">
+                                                <img src="{{ user_card["avatar_url"] }}" class="rounded-circle"
+                                                     style="object-fit : cover; margin: auto" height="96"
+                                                     width="96"
+                                                     alt="user_avatar"></a>
                                         </div>
                                         <div class="col-md-8">
                                             <div class="card-body">
-                                                <h5 class="card-title">Card title</h5>
-                                                <p class="card-text">This is a wider card with supporting text below as
-                                                    a natural lead-in to additional content. This content is a little
-                                                    bit longer.</p>
+                                                <h5 class="card-title">{{ user_card["username"] }}</h5>
+                                                <p class="card-text">{{ user_card["aboutyou"] }}</p>
                                                 <p class="card-text"><small class="text-muted">Last updated 3 mins
                                                     ago</small></p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                </div>
-
-{#                                <div class="card card-pin">#}
-{#                                    <a href="/"><img src="{{ user_card["avatar_url"] }}" class="rounded-circle"#}
-{#                                                     style="object-fit : cover" height="128" width="128"#}
-{#                                                     alt="user_avatar"></a>#}
-{#                                    <button> follow</button>#}
-{#                                </div>#}
-                            {% endfor %}
-                        </div>
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
             {% endif %}
@@ -195,7 +196,7 @@
                     <div class="actionsBtns" style="text-align: center">
                         <form action="/logout" method="POST">
                             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                            {#                    <button type="submit" class="btn btn-default btn-primary" data-dismiss="modal">Logout</button>#}
+                            {#<button type="submit" class="btn btn-default btn-primary" data-dismiss="modal">Logout</button>#}
                             <a class="btn btn-primary nav__link" href="/logout" role="button"><span class="nav__item">Log out</span></a>
                             <button class="btn btn-default" data-dismiss="modal">Cancel</button>
                         </form>
@@ -210,7 +211,7 @@
 <script src="/static/js/app.js"></script>
 <script src="/static/js/theme.js"></script>
 
-<footer class="footer pt-5 pb-5 text-center">
+<footer class="footer pt-5 pb-5 text-center" style="margin-top: 23em;">
 
     <div class="container">
 

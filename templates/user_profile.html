@@ -96,7 +96,16 @@
     <div class="container mb-4">
         <img src="{{ avatar_url }}" class="mt-neg100 mb-4 rounded-circle" style="object-fit : cover" height="128"
              width="128">
-        <h1 class="font-weight-bold title">{{ username }}</h1>
+        <div class="row">
+            <div class="col-2">
+                <h1 class="font-weight-bold title">{{ username }}</h1>
+            </div>
+            <div class="col-2" style="display: flex; align-items: center">
+                <form action="/user/{{ _id }}">
+                    <button type="submit" class="btn btn-outline-primary btn-sm"> Public Profile </button>
+                </form>
+            </div>
+        </div>
         <p>
             {{ aboutyou }}
         </p>
@@ -141,14 +150,9 @@
                                  alt="Card image">
                             <div class="overlay">
                                 <h2 class="card-title title">{{ post_card["title"] }}</h2>
-                                <div class="more form-row">
-                                    <a href="/post/create/{{ post_card["_id"] }}" style="padding-right: 5px">
-                                        <button class="btn btn-sm" aria-hidden="true">Edit</button></a>
-                                    <form class="delete_post" action="/post/{{ post_card["_id"] }}" method="POST" novalidate>
-                                        <button class="btn btn-sm" name="delete" value="true">
-                                            Delete
-                                        </button>
-                                    </form>
+                                <div class="more">
+                                    <a class="nav-link" href="/post/{{ post_card["_id"] }}">
+                                        <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> View </a>
                                 </div>
                             </div>
                         </div>
@@ -156,47 +160,85 @@
                 </div>
             </div>
         </div>
-    {% elif nav == "liked" %}
-        <div class="container mb-4">
-            <form action="/post" method="POST">
-                {#Post Title#}
-                <div class="form-group">
-                    <label for="user_post_title">Title</label>
-                    <input type="text" class="form-control" id="user_post_title">
-                </div>
-            </form>
-            <form class="g-3 needs-validation" action="/post/img" method="POST" enctype="multipart/form-data">
-                <div class="form-row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label" for="user_profile_avatar">Change Avatar</label>
-                        <div class="input-group">
-                            <input class="form-control" type="file" name="user_profile_avatar" id="user_profile_avatar"
-                                   style="display: none" required/>
-                            <button class="btn" type="submit">Upload</button>
-                        </div>
-                        <div class="invalid-feedback">Invalid file</div>
-                    </div>
-                </div>
-            </form>
 
-        </div>
-    {% elif nav == "following" %}
+    {% elif nav == "liked" %}
         <div class="container-fluid mb-5">
-        </div>
-    {% elif nav == "followers" %}
-        <div class="container">
-            <div class="container-fluid mb-5">
-                <div class="row">
-                    {% for follower_card in follower_cards %}
+            <div class="row">
+                <div class="card-columns">
+                    {% for liked_card in liked_cards %}
                         <div class="card card-pin">
-                            <img src="{{ follower_card["avatar_url"] }}" class="rounded_cr" alt="user_avatar">
-                            <button> unfollow</button>
-                            <button> visit page</button>
+                            <img class="card-img"
+                                 src="{{ liked_card["post_img_url"] }}"
+                                 alt="Card image">
+                            <div class="overlay">
+                                <h2 class="card-title title">{{ liked_card["title"] }}</h2>
+                                <div class="more">
+                                    <a class="nav-link" href="/post/{{ liked_card["_id"] }}">
+                                        <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i> View </a>
+                                </div>
+                            </div>
                         </div>
                     {% endfor %}
                 </div>
             </div>
         </div>
+
+    {% elif nav == "following" %}
+        <div class="container-fluid mb-5">
+            <div class="row">
+                {% for following_card in following_cards %}
+                    <div class="rounded" style="border: 2px solid rgba(178,178,178, 0.2); margin-right: 1em">
+                        <div class="card mb-3" style="max-width: 350px; min-width: 350px">
+                            <div class="row no-gutters">
+                                <div class="col-md-4"
+                                     style="display: flex; align-items: center; justify-content: center">
+                                    <a href="/user/{{ following_card["_id"] }}">
+                                        <img src="{{ following_card["avatar_url"] }}" class="rounded-circle"
+                                             style="object-fit : cover; margin: auto" height="96"
+                                             width="96"
+                                             alt="user_avatar"></a>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ following_card["username"] }}</h5>
+                                        <p class="card-text">{{ following_card["aboutyou"] }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    {% elif nav == "followers" %}
+        <div class="container-fluid mb-5">
+            <div class="row">
+                {% for follower_card in follower_cards %}
+                    <div class="rounded" style="border: 2px solid rgba(178,178,178, 0.2); margin-right: 1em">
+                        <div class="card mb-3" style="max-width: 350px; min-width: 350px">
+                            <div class="row no-gutters">
+                                <div class="col-md-4"
+                                     style="display: flex; align-items: center; justify-content: center">
+                                    <a href="/user/{{ follower_card["_id"] }}">
+                                        <img src="{{ follower_card["avatar_url"] }}" class="rounded-circle"
+                                             style="object-fit : cover; margin: auto" height="96"
+                                             width="96"
+                                             alt="user_avatar"></a>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ follower_card["username"] }}</h5>
+                                        <p class="card-text">{{ follower_card["aboutyou"] }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
     {% elif nav == "edit" %}
         <div class="container mb-4">
             <form class="g-3 needs-validation" action="/user_profile/avatar/" method="POST"
@@ -362,6 +404,7 @@
                 </div>
             </form>
         </div>
+
     {% endif %}
 
     <div class="modal" id="logoutModal" tabindex="-1" role="dialog" aria-hidden="true">

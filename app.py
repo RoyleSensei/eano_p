@@ -67,6 +67,7 @@ def login():
         # verify password using sha256 check if it is the same hash in db
         if pbkdf2_sha256.verify(password, user["password_hash"]):
             token = secrets.token_urlsafe(16)
+            session["uid"] = str(user["_id"])
             session["username"] = user["username"]
             session["avatar_url"] = user["avatar_url"]
             session["email"] = email
@@ -177,10 +178,28 @@ def user_profile():
         kwargs["follower_cards"] = []
     else:
         follower_cards = []
-        for email in user["followers"]:
-            follower_card = app.db.users.find_one({"email": email})
-            follower_cards += follower_card
+        for uid in user["followers"]:
+            follower_card = app.db.users.find_one({"_id": ObjectId(uid)})
+            follower_cards += [follower_card]
         kwargs["follower_cards"] = follower_cards
+
+    if "followings" not in kwargs or kwargs["followings"] is None:
+        kwargs["following_cards"] = []
+    else:
+        following_cards = []
+        for uid in user["followings"]:
+            following_card = app.db.users.find_one({"_id": ObjectId(uid)})
+            following_cards += [following_card]
+        kwargs["following_cards"] = following_cards
+
+    if "likes" not in kwargs or kwargs["likes"] is None:
+        kwargs["liked_cards"] = []
+    else:
+        liked_cards = []
+        for pid in user["likes"]:
+            liked_card = app.db.posts.find_one({"_id": ObjectId(pid)})
+            liked_cards += [liked_card]
+        kwargs["liked_cards"] = liked_cards
 
     return render_template(
         "user_profile.html", **kwargs
@@ -197,7 +216,9 @@ def upload_avatar():
     new_filename = None
     for file in request.files.getlist("user_profile_avatar"):
         suffix = secure_filename(file.filename).split(".")[-1]
-        new_filename = str(uuid.uuid4()) + "." + suffix
+        new_filename = str(session["uid"]) + "." + suffix
+        if os.path.exists(target + new_filename):
+            os.remove(target + new_filename)
         file.save(target + new_filename)
 
     app.db.users.update_one(
@@ -224,9 +245,13 @@ def post_create():
             post_img_filename = str(uuid.uuid4()) + "." + suffix
             file.save(target + post_img_filename)
 
-        insert_result = app.db.posts.insert_one(
-            {"post_img_url": '/static/img/post_img/' + post_img_filename}
-        )
+        insert_result = app.db.posts.insert_one({
+            "post_img_url": '/static/img/post_img/' + post_img_filename,
+            "author_id": session["uid"],
+            "author": session["username"],
+            "author_avatar_url": session["avatar_url"]
+        })
+
         pid = str(insert_result.inserted_id)
         user = app.db.users.find_one({"email": session["email"]})
         app.db.users.update_one(
@@ -256,6 +281,7 @@ def post_create_continue(pid):
                     "post_img_url": request.form.get("user_post_img")
                 }}
             )
+            return render_template("post_continue.html", session=session, post_card=post)
         else:
             rating = request.form.get("user_post_rating")
             title = request.form.get("user_post_title")
@@ -265,18 +291,25 @@ def post_create_continue(pid):
                 {"$set": {
                     "rating": rating,
                     "title": title,
-                    "review": review
+                    "review": review,
                 }},
                 upsert=True
             )
-            return redirect(url_for("user_profile", nav="posts"))
-    # return render_template("post_continue.html", pid=pid, post_img_url=post["post_img_url"], session=session)
-    return render_template("post_continue.html", session=session, post_card=post)
+            return redirect(url_for("user_profile", nav="posts", session=session))
+    else:  # method == "GET"
+        return render_template("post_continue.html", session=session, post_card=post)
 
 
 @app.route('/post/<pid>', methods=["GET", "POST"])
 @login_required
-def post_view(pid):
+def post_management(pid):
+    post = app.db.posts.find_one({"_id": ObjectId(pid)})
+    user = app.db.users.find_one({"email": session["email"]})
+
+    liked = "false"
+    if "likes" in user and pid in user["likes"]:
+        liked = "true"
+
     if request.method == "POST":
         if "delete" in request.form:
             app.db.posts.delete_one(
@@ -293,8 +326,33 @@ def post_view(pid):
                 }}
             )
             return redirect(url_for("user_profile", nav="posts"))
-    #TODO:
-    pass
+
+    elif request.method == "GET":
+        return render_template("post.html", session=session, post_card=post, user_card=user, liked=liked)
+
+
+@app.route('/post/like/<pid>', methods=["POST"])
+def liked_posts(pid):
+    if "like" in request.form:
+        current_user = app.db.users.find_one({'email': session["email"]})
+        app.db.users.update_one(
+            {"email": session["email"]},
+            {"$set": {
+                "likes": (current_user["likes"] if "likes" in current_user else []) + [pid]
+            }},
+            upsert=True
+        )
+        return redirect('/post/' + pid)
+    elif "unlike" in request.form:
+        current_user = app.db.users.find_one({'email': session["email"]})
+        current_user["likes"].remove(pid)
+        app.db.users.update_one(
+            {"email": session["email"]},
+            {"$set": {
+                "likes": current_user["likes"]
+            }}
+        )
+        return redirect('/post/' + pid)
 
 
 @app.route('/search', methods=["POST", "GET"])
@@ -317,6 +375,89 @@ def search_result():
         return render_template("search_result.html", nav=nav, keyword=keyword, post_cards=post_cards,
                                user_cards=user_cards,
                                session=session)
+
+
+@app.route('/user/<uid>', methods=["POST", "GET"])
+@login_required
+def user_main_page(uid):
+    user = app.db.users.find_one({"_id": ObjectId(uid)})
+    posts = user["posts"]
+    post_cards = []
+    for pid in posts:
+        post_card = app.db.posts.find_one({"_id": ObjectId(pid)})
+        post_cards.append(post_card)
+
+    nav = request.args.get("nav")
+    if nav is None:
+        nav = "posts"
+
+    followed = "false"
+    if "followers" in user and session["uid"] in user["followers"]:
+        followed = "true"
+
+    follower_cards = []
+    if "followers" in user:
+        for follower_id in user["followers"]:
+            follower_cards.append(
+                app.db.users.find_one({"_id": ObjectId(follower_id)})
+            )
+
+    following_cards = []
+    if "followings" in user:
+        for following_id in user["followings"]:
+            following_cards.append(
+                app.db.users.find_one({"_id": ObjectId(following_id)})
+            )
+
+    liked_cards = []
+    if "likes" in user:
+        for pid in user["likes"]:
+            liked_cards.append(
+                app.db.posts.find_one({"_id": ObjectId(pid)})
+            )
+
+    return render_template('user_main.html', post_cards=post_cards, user=user, followed=followed, nav=nav,
+                           follower_cards=follower_cards, following_cards=following_cards, liked_cards=liked_cards)
+
+
+@app.route('/user/follow/<uid>', methods=["POST"])
+def follow(uid):
+    if "follow" in request.form:
+        current_user = app.db.users.find_one({'email': session["email"]})
+        app.db.users.update_one(
+            {"email": session["email"]},
+            {"$set": {
+                "followings": (current_user["followings"] if "followings" in current_user else []) + [uid]
+            }},
+            upsert=True
+        )
+        following_user = app.db.users.find_one({"_id": ObjectId(uid)})
+        app.db.users.update_one(
+            {"_id": ObjectId(uid)},
+            {"$set": {
+                "followers": (following_user["followers"] if "followers" in following_user else []) + [session["uid"]]
+            }},
+            upsert=True
+        )
+
+    else:
+        current_user = app.db.users.find_one({'email': session["email"]})
+        current_user["followings"].remove(uid)
+        app.db.users.update_one(
+            {"email": session["email"]},
+            {"$set": {
+                "followings": current_user["followings"]
+            }}
+        )
+        unfollowing_user = app.db.users.find_one({"_id": ObjectId(uid)})
+        unfollowing_user["followers"].remove(session["uid"])
+        app.db.users.update_one(
+            {"_id": ObjectId(uid)},
+            {"$set": {
+                "followers": (unfollowing_user["followers"])
+            }},
+        )
+    return redirect('/user/' + uid)
 
 
 @app.route('/test', methods=["GET", "POST"])
