@@ -151,26 +151,28 @@
                     </div>
                 </div>
             {% else %}
-                <div class="container-fluid mb-5" >
+                <div class="container mb-4" style="display: flex; flex-wrap: wrap">
                     <div class="row">
                         {% for user_card in user_cards %}
-                            <div class="rounded" style="border: 2px solid rgba(178,178,178, 0.2); margin-right: 1em">
-                                <div class="card mb-3" style="max-width: 350px; min-width: 350px">
+                            <div style="border: 2px solid rgba(178,178,178, 0.2); margin: 0.5em; border-radius: 1rem; width: 320px">
+                                <div class="card">
                                     <div class="row no-gutters">
                                         <div class="col-md-4"
-                                             style="display: flex; align-items: center; justify-content: center">
-                                            <a href="/">
+                                             style="display: flex; align-items: center; justify-content: center; padding-left: 1em">
+                                            <a href="/user/{{ user_card["_id"] }}">
                                                 <img src="{{ user_card["avatar_url"] }}" class="rounded-circle"
-                                                     style="object-fit : cover; margin: auto" height="96"
-                                                     width="96"
+                                                     style="object-fit : cover; margin: auto" height="85"
+                                                     width="85"
                                                      alt="user_avatar"></a>
                                         </div>
                                         <div class="col-md-8">
-                                            <div class="card-body">
+                                            <div class="card-body" style="padding: 1rem">
                                                 <h5 class="card-title">{{ user_card["username"] }}</h5>
-                                                <p class="card-text">{{ user_card["aboutyou"] }}</p>
-                                                <p class="card-text"><small class="text-muted">Last updated 3 mins
-                                                    ago</small></p>
+                                                <p class="card-text"
+                                                   style="height: 40px">{{ user_card["aboutyou"] | truncate(40, true) }}</p>
+                                                <p class="card-text"><small
+                                                        class="text-muted">Followers: {{ user_card["followers"] | length }}</small>
+                                                </p>
                                             </div>
                                         </div>
                                     </div>

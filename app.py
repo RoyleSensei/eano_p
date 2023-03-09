@@ -2,6 +2,8 @@ import functools
 import os
 import secrets
 import uuid
+
+import pymongo
 from flask import (
     Flask,
     session,
@@ -11,6 +13,7 @@ from flask import (
     redirect,
     url_for,
 )
+import datetime
 from passlib.hash import pbkdf2_sha256
 from pymongo import MongoClient
 from werkzeug.utils import secure_filename
@@ -45,27 +48,43 @@ def login_required(route):
     return route_wrapper
 
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 @login_required
 def index():
+    nav = request.args.get("nav") if "nav" in request.args else "latest"
+    if nav == "latest":
+        posts = app.db.posts.find().sort('date', pymongo.DESCENDING)
+    elif nav == "most_liked":
+        posts = app.db.posts.find().sort('likes_count', pymongo.DESCENDING)
+    elif nav == "highest_rated":
+        posts = app.db.posts.find().sort('highest_rated', pymongo.DESCENDING)
+    else:
+        posts = []
+
     return render_template(
         "index.html",
         title="Eano Community",
-        session=session
+        session=session,
+        post_cards=posts
     )
 
 
 @app.route('/login/', methods=["GET", "POST"])
 def login():
-    email = ""
+    message = ""
     if request.method == "POST":
         email = request.form.get("login_email")
         password = request.form.get("login_password")
 
         # get user from db
         user = app.db.users.find_one({"email": email})
+
+        if user is None:
+            message = "Wrong email or password!"
+            return render_template("login.html", message=message)
         # verify password using sha256 check if it is the same hash in db
         if pbkdf2_sha256.verify(password, user["password_hash"]):
+            # generate token for login
             token = secrets.token_urlsafe(16)
             session["uid"] = str(user["_id"])
             session["username"] = user["username"]
@@ -77,31 +96,43 @@ def login():
                 {"$set": {"token": token}},
                 upsert=True
             )
-            # generate token for login
-
             return redirect(url_for("index"))
-        # flash("Incorrect e-mail or password.")
-    return render_template("login.html", email=email)
+        else:
+            message = "Wrong email or password!"
+            return render_template("login.html", message=message)
+
+    return render_template("login.html", message=message)
 
 
 @app.route('/signup/', methods=["GET", "POST"])
 def signup():
+    message = {}
     if request.method == "POST":
         username = request.form.get("signup_username")
         email = request.form.get("signup_email")
         password = request.form.get("signup_password")
+        confirmed_password = request.form.get("signup_confirm_password")
+        if confirmed_password == password:
+            pass
+        else:
+            message["confirmed_password"] = "Password does not match!"
+            return render_template("signup.html", message=message)
 
-        # store user {userid, email, password_hash, token} into db
-        app.db.users.insert_one({
-            "username": username,
-            "email": email,
-            "password_hash": pbkdf2_sha256.hash(password),
-            "avatar_url": "/static/img/av.png"
-        })
-        # TODO handle duplicate email
-        # flash("Successfully signed up")
-        return redirect(url_for("login"))
-    return render_template("signup.html")
+        existed_user = app.db.users.find_one({"email": email})
+        if existed_user is None:
+            # store user {userid, email, password_hash, token} into db
+            app.db.users.insert_one({
+                "username": username,
+                "email": email,
+                "password_hash": pbkdf2_sha256.hash(password),
+                "avatar_url": "/static/img/av.png"
+            })
+            return redirect(url_for("login"))
+        else:
+            message["email"] = "Email already exists!"
+            return render_template("signup.html", message=message)
+
+    return render_template("signup.html", message=message)
 
 
 @app.route("/logout")
@@ -286,12 +317,14 @@ def post_create_continue(pid):
             rating = request.form.get("user_post_rating")
             title = request.form.get("user_post_title")
             review = request.form.get("user_post_review")
+            formatted_date = datetime.datetime.today().strftime("%Y-%m-%d-%H:%M:%S")
             app.db.posts.update_one(
                 {"_id": ObjectId(pid)},
                 {"$set": {
                     "rating": rating,
                     "title": title,
                     "review": review,
+                    "date": formatted_date
                 }},
                 upsert=True
             )
@@ -342,6 +375,13 @@ def liked_posts(pid):
             }},
             upsert=True
         )
+        post = app.db.posts.find_one({"_id": ObjectId(pid)})
+        app.db.posts.update_one(
+            {"_id": ObjectId(pid)},
+            {"$set": {
+                "likes_count": (post["likes_count"] if "likes_count" in post else 0) + 1
+            }}
+        )
         return redirect('/post/' + pid)
     elif "unlike" in request.form:
         current_user = app.db.users.find_one({'email': session["email"]})
@@ -350,6 +390,13 @@ def liked_posts(pid):
             {"email": session["email"]},
             {"$set": {
                 "likes": current_user["likes"]
+            }}
+        )
+        post = app.db.posts.find_one({"_id": ObjectId(pid)})
+        app.db.posts.update_one(
+            {"_id": ObjectId(pid)},
+            {"$set": {
+                "likes_count": post["likes_count"] - 1
             }}
         )
         return redirect('/post/' + pid)
@@ -381,11 +428,12 @@ def search_result():
 @login_required
 def user_main_page(uid):
     user = app.db.users.find_one({"_id": ObjectId(uid)})
-    posts = user["posts"]
+
     post_cards = []
-    for pid in posts:
-        post_card = app.db.posts.find_one({"_id": ObjectId(pid)})
-        post_cards.append(post_card)
+    if "posts" in user:
+        for pid in user["posts"]:
+            post_card = app.db.posts.find_one({"_id": ObjectId(pid)})
+            post_cards.append(post_card)
 
     nav = request.args.get("nav")
     if nav is None:

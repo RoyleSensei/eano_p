@@ -98,10 +98,10 @@
              height="128"
              width="128">
         <div class="row">
-            <div class="col-2">
+            <div class="col-md-4">
                 <h1 class="font-weight-bold title">{{ user["username"] }}</h1>
             </div>
-            <div class="col-1" style="display: flex; align-items: center">
+            <div class="col-md-1 offset-md-7" style="display: flex; align-items: center">
                 <form action="/user/follow/{{ user["_id"] }}" method="POST">
                     {% if followed == "true" %}
                         <button name="unfollow" value="" class="btn btn-outline-primary btn-sm"> Unfollow</button>
@@ -190,89 +190,123 @@
         </div>
 
     {% elif nav == "following" %}
-        <div class="container-fluid mb-5">
-            <div class="row">
-                {% for following_card in following_cards %}
-                    <div class="rounded" style="border: 2px solid rgba(178,178,178, 0.2); margin-right: 1em">
-                        <div class="card mb-3" style="max-width: 350px; min-width: 350px">
-                            <div class="row no-gutters">
-                                <div class="col-md-4"
-                                     style="display: flex; align-items: center; justify-content: center">
-                                    <a href="/user/{{ following_card["_id"] }}">
-                                        <img src="{{ following_card["avatar_url"] }}" class="rounded-circle"
-                                             style="object-fit : cover; margin: auto" height="96"
-                                             width="96"
-                                             alt="user_avatar"></a>
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ following_card["username"] }}</h5>
-                                        <p class="card-text">{{ following_card["aboutyou"] }}</p>
+        {% if following_cards is none or following_cards |length == 0 %}
+            <div class="container mb-4">
+                <div class="row" style="display: flex; align-items: center; justify-content: center;">
+                    <p class="text-muted"> Nobody found here... </p>
+                </div>
+            </div>
+        {% else %}
+            <div class="container mb-4" style="display: flex; flex-wrap: wrap">
+                <div class="row">
+                    {% for following_card in following_cards %}
+                        <div style="border: 2px solid rgba(178,178,178, 0.2); margin: 0.5em; border-radius: 1rem; width: 320px">
+                            <div class="card">
+                                <div class="row no-gutters">
+                                    <div class="col-md-4"
+                                         style="display: flex; align-items: center; justify-content: center; padding-left: 1em">
+                                        <a href="/user/{{ following_card["_id"] }}">
+                                            <img src="{{ following_card["avatar_url"] }}" class="rounded-circle"
+                                                 style="object-fit : cover; margin: auto" height="85"
+                                                 width="85"
+                                                 alt="user_avatar"></a>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body" style="padding: 1rem">
+                                            <h5 class="card-title">{{ following_card["username"] }}</h5>
+                                            <p class="card-text"
+                                               style="height: 40px">{{ following_card["aboutyou"] | truncate(40, true) }}</p>
+                                            <p class="card-text"><small
+                                                    class="text-muted">Followers: {{ following_card["followers"] | length }}</small>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
-        </div>
+        {% endif %}
 
     {% elif nav == "followers" %}
-        <div class="container-fluid mb-5">
-            <div class="row">
-                {% for follower_card in follower_cards %}
-                    <div class="rounded" style="border: 2px solid rgba(178,178,178, 0.2); margin-right: 1em">
-                        <div class="card mb-3" style="max-width: 350px; min-width: 350px">
-                            <div class="row no-gutters">
-                                <div class="col-md-4"
-                                     style="display: flex; align-items: center; justify-content: center">
-                                    <a href="/user/{{ follower_card["_id"] }}">
-                                        <img src="{{ follower_card["avatar_url"] }}" class="rounded-circle"
-                                             style="object-fit : cover; margin: auto" height="96"
-                                             width="96"
-                                             alt="user_avatar"></a>
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ follower_card["username"] }}</h5>
-                                        <p class="card-text">{{ follower_card["aboutyou"] }}</p>
+        {% if follower_cards is none or follower_cards |length == 0 %}
+            <div class="container mb-4">
+                <div class="row" style="display: flex; align-items: center; justify-content: center;">
+                    <p class="text-muted"> Nobody found here... </p>
+                </div>
+            </div>
+        {% else %}
+            <div class="container mb-4" style="display: flex; flex-wrap: wrap">
+                <div class="row">
+                    {% for follower_card in follower_cards %}
+                        <div style="border: 2px solid rgba(178,178,178, 0.2); margin: 0.5em; border-radius: 1rem; width: 320px">
+                            <div class="card">
+                                <div class="row no-gutters">
+                                    <div class="col-md-4"
+                                         style="display: flex; align-items: center; justify-content: center; padding-left: 1em">
+                                        <a href="/user/{{ follower_card["_id"] }}">
+                                            <img src="{{ follower_card["avatar_url"] }}" class="rounded-circle"
+                                                 style="object-fit : cover; margin: auto" height="85"
+                                                 width="85"
+                                                 alt="user_avatar"></a>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body" style="padding: 1rem">
+                                            <h5 class="card-title">{{ follower_card["username"] }}</h5>
+                                            <p class="card-text"
+                                               style="height: 40px">{{ follower_card["aboutyou"] | truncate(40, true) }}</p>
+                                            <p class="card-text"><small
+                                                    class="text-muted">Followers: {{ follower_card["followers"] | length }}</small>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
-        </div>
+        {% endif %}
 
     {% elif nav == "profile" %}
         <div class="container mb-4">
-            <ul>
-                <li>
-                    <div class="row">
-                        {#username#}
-                        <div class="col-md-4 mb-3">
-                            <label for="user_username" class="form-label">Username: </label>
-                            <p type="text" id="user_username"> {{ user["username"] }} </p>
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card mb-4" style="background-color: rgb(248, 249, 250)">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Full Name</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-dark mb-0">{{ user["firstname"] }} &nbsp {{user["lastname"] }}</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">Email</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-dark mb-0">{{ user["email"] }}</p>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <p class="mb-0">City</p>
+                                </div>
+                                <div class="col-sm-9">
+                                    <p class="text-dark mb-0">{{ user["city"] }}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </li>
-                <li>
-                    <div class="row">
-                        {#city#}
-                        <div class="col-md-6 mb-3">
-                            <label for="user_city">City: </label>
-                            <p type="text" id="user_city"> {{ user["city"] }}</p>
-                        </div>
-                        {#state#}
-                        <div class="col-md-3 mb-3">
-                            <label for="user_city">State: </label>
-                            <p type="text" id="user_state"> {{ user["state"] }}</p>
-                        </div>
-                    </div>
-                </li>
-            </ul>
+                </div>
+            </div>
         </div>
+
     {% endif %}
 
     <div class="modal" id="logoutModal" tabindex="-1" role="dialog" aria-hidden="true">
