@@ -42,7 +42,7 @@ ____
 
 - **Login Page**
 
-    ![Login Page.jpg](static%2Fimg%2FprojectPresentation%2FLogin%20Page.jpg)
+    ![Login Page.jpg](static%2Fimg%2FprojectPresentation%2FLogin%20Page.jpg?raw=true)
 
 _**Description:**_ Login page contains email & password verification methods. 
 
@@ -95,7 +95,7 @@ _**Description:**_ Login page contains email & password verification methods.
 <br/>
 
 - **Sign-up Page**
-![Sign-up Page.jpg](static%2Fimg%2FprojectPresentation%2FSign-up%20Page.jpg)
+![Sign-up Page.jpg](static%2Fimg%2FprojectPresentation%2FSign-up%20Page.jpg?raw=true)
 
 _**Description:**_ Users can sign up their accounts with their email. This page contains duplicate email control and the
 password confirming method.
@@ -133,7 +133,7 @@ password confirming method.
 <br/>
 
 - **Timeline Page**
-![TimeLinePage.jpg](static%2Fimg%2FprojectPresentation%2FTimeLinePage.jpg)
+![TimeLinePage.jpg](static%2Fimg%2FprojectPresentation%2FTimeLinePage.jpg?raw=true)
 
 _**Description:**_ Contains posts created by users. There are three opions including **Latest**, **Most Liked**, and 
 **Highest Rated** for users to filter the posts.
@@ -161,7 +161,7 @@ _**Description:**_ Contains posts created by users. There are three opions inclu
 <br/>
 
 - **PostShow Page**
-![PostShow Page.jpg](static%2Fimg%2FprojectPresentation%2FPostShow%20Page.jpg)
+![PostShow Page.jpg](static%2Fimg%2FprojectPresentation%2FPostShow%20Page.jpg?raw=true)
 
 _**Description:**_ Users can view the posts published by themselves or others and choose to like the post or not. Users
 can also click on the author username to go to the author's main page. 
