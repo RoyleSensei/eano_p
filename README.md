@@ -190,5 +190,4 @@ _**Description:**_ Users can log out their accounts by clicking the button in th
 the posts liked by the specific user, the following accounts and followers of the specific user, and the basic profile info
 of the specific user.
 
-
-
+---
