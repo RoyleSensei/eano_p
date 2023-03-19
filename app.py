@@ -48,6 +48,18 @@ def login_required(route):
     return route_wrapper
 
 
+def admin_login_required(route):
+    @functools.wraps(route)
+    def route_wrapper(*args, **kwargs):
+        email = session.get("email")
+        admin = app.db.admins.find_one({"email": email})
+        if admin is None or admin["token"] != session.get("token"):
+            return redirect(url_for("login"))
+        return route(*args, **kwargs)
+
+    return route_wrapper
+
+
 @app.route("/", methods=["GET"])
 @login_required
 def index():
@@ -125,7 +137,8 @@ def signup():
                 "username": username,
                 "email": email,
                 "password_hash": pbkdf2_sha256.hash(password),
-                "avatar_url": "/static/img/av.png"
+                "avatar_url": "/static/img/av.png",
+                "created_time": datetime.datetime.now()
             })
             return redirect(url_for("login"))
         else:
@@ -229,7 +242,8 @@ def user_profile():
         liked_cards = []
         for pid in user["likes"]:
             liked_card = app.db.posts.find_one({"_id": ObjectId(pid)})
-            liked_cards += [liked_card]
+            if liked_card is not None:
+                liked_cards += [liked_card]
         kwargs["liked_cards"] = liked_cards
 
     return render_template(
@@ -508,9 +522,113 @@ def follow(uid):
     return redirect('/user/' + uid)
 
 
+@app.route('/admin/login', methods=["GET", "POST"])
+def admin_login():
+    message = ""
+    if request.method == "POST":
+        email = request.form.get("admin_login_email")
+        password = request.form.get("admin_login_password")
+
+        # get admin from db
+        admin = app.db.admins.find_one({"email": email})
+
+        if admin is None:
+            message = "Wrong email or password!"
+            return render_template("admin_login.html", message=message)
+        # verify password using sha256 check if it is the same hash in db
+        if pbkdf2_sha256.verify(password, admin["password_hash"]):
+            # generate token for login
+            token = secrets.token_urlsafe(16)
+            session["uid"] = str(admin["_id"])
+            session["username"] = admin["username"]
+            session["avatar_url"] = admin["avatar_url"]
+            session["email"] = email
+            session["token"] = token
+            app.db.users.update_one(
+                {"email": email},
+                {"$set": {"token": token}},
+                upsert=True
+            )
+            return redirect(url_for("test"))
+        else:
+            message = "Wrong email or password!"
+            return render_template("admin_login.html", message=message)
+
+    return render_template("admin_login.html", message=message)
+
+
+def add_user_growth_chart(admin_data):
+    admin_data["user_growth_chart"] = {
+        "months": [],
+        "users_number": [],
+    }
+
+    def getFirstDateOfRecentTwelveMonths():
+        return [datetime.datetime(*t) for t in [
+            (2022, 5, 1), (2022, 6, 1),
+            (2022, 7, 1), (2022, 8, 1), (2022, 9, 1), (2022, 10, 1),
+            (2022, 11, 1), (2022, 12, 1), (2023, 1, 1), (2023, 2, 1),
+            (2023, 3, 1), (2023, 4, 1)
+        ]]
+
+    for date in getFirstDateOfRecentTwelveMonths():
+        count = app.db.users.count_documents({
+            "created_time": {
+                "$lt": date
+            }
+        })
+        admin_data["user_growth_chart"]["months"].append(date.strftime("%Y-%m"))
+        admin_data["user_growth_chart"]["users_number"].append(count)
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin_pages():
+    nav = request.args.get("nav") if "nav" in request.args else "dashboard"
+    admin_data = {}
+
+    if nav == "dashboard":
+        admin_data["users_number"] = app.db.users.count_documents({})
+        admin_data["posts_number"] = app.db.posts.count_documents({})
+        add_user_growth_chart(admin_data)
+        return render_template('admin_page.html', admin_data=admin_data, nav=nav)
+
+    elif nav == "users":
+        keyword = request.args.get("keyword")
+        if keyword is None:
+            keyword = ""
+        user_cards = [_ for _ in app.db.users.find({"username": {'$regex': ".*" + keyword + ".*", "$options": "i"}})]
+        admin_data = {"user_search_result": user_cards}
+        add_user_growth_chart(admin_data)
+        return render_template("admin_page.html", nav=nav, admin_data=admin_data)
+
+    elif nav == "posts":
+        keyword = request.args.get("keyword")
+        if keyword is None:
+            keyword = ""
+        post_cards = [_ for _ in app.db.posts.find({"title": {'$regex': ".*" + keyword + ".*", "$options": "i"}})]
+        admin_data = {"post_search_result": post_cards}
+        return render_template("admin_page.html", nav=nav, admin_data=admin_data)
+
+    else:
+        pass
+
+
+@app.route('/admin_user_search', methods=["POST"])
+# @admin_login_required
+def admin_user_search_result():
+    keyword = request.form.get("keyword")
+    return redirect("/admin?nav=users&keyword=" + keyword)
+
+
+@app.route('/admin_post_search', methods=["POST"])
+# @admin_login_required
+def admin_post_search_result():
+    keyword = request.form.get("keyword")
+    return redirect("/admin?nav=posts&keyword=" + keyword)
+
+
 @app.route('/test', methods=["GET", "POST"])
 def test():
-    print(request.form)
     return render_template('test.html')
 
 

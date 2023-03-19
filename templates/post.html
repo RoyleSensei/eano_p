@@ -16,11 +16,11 @@
     <link rel="stylesheet" href="/static/css/app.css">
     <link rel="stylesheet" href="/static/css/theme.css">
     <style media="screen">
-        .align-middle{
+        .align-middle {
             color: #1d2124;
         }
 
-        .align-middle:hover{
+        .align-middle:hover {
             color: #8c0615;
         }
 
@@ -44,6 +44,10 @@
             color: #fff;
             background-color: #8c0615;
             border: 1px solid #8c0615;
+        }
+
+        .checked {
+            color: orange;
         }
     </style>
 </head>
@@ -127,13 +131,46 @@
                              src="{{ post_card["post_img_url"] }}" alt="Card image">
                         <div class="card-body">
                             <h1 class="card-title display-4">{{ post_card["title"] }}</h1>
+                            {% if post_card['rating'] == '5' %}
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                            {% elif post_card['rating'] == '4' %}
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star"></span>
+                            {% elif post_card['rating'] == '3' %}
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                            {% elif post_card['rating'] == '2' %}
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                            {% elif post_card['rating'] == '1' %}
+                                <span class="fa fa-star checked"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                                <span class="fa fa-star"></span>
+                            {% endif %}
                             <p>
                                 {{ post_card["review"] }}
                             </p>
                             <div class="row">
                                 <div class="col-md-4" style="display: flex; justify-content: left">
-                                    <a class="nav-link" href="/user/{{ post_card["author_id"] }}" style="padding-left: 0">
-                                        <img class="images rounded-circle mr-2" src="{{ post_card["author_avatar_url"] }}"
+                                    <a class="nav-link" href="/user/{{ post_card["author_id"] }}"
+                                       style="padding-left: 0">
+                                        <img class="images rounded-circle mr-2"
+                                             src="{{ post_card["author_avatar_url"] }}"
                                              alt="avatar"
                                              style="object-fit : cover" height="30" width="30">
                                         <span class="align-middle">{{ post_card["author"] }}</span>
@@ -143,11 +180,13 @@
                                      style="display: flex; align-items: center; justify-content: right">
                                     <form action="/post/like/{{ post_card["_id"] }}" method="POST">
                                         {% if liked == "false" %}
-                                            <button class="thumb thumbs-up btn-outline-primary" name="like" value=""><i class="fa fa-thumbs-o-up"></i></button>
-{#                                            <button class=" btn-outline-primary" name="like" value=""><i class="fa fa-thumbs-o-up"></i> Like </button>#}
+                                            <button class="thumb thumbs-up btn-outline-primary" name="like" value=""><i
+                                                    class="fa fa-thumbs-o-up"></i></button>
+                                            {#                                            <button class=" btn-outline-primary" name="like" value=""><i class="fa fa-thumbs-o-up"></i> Like </button>#}
                                         {% else %}
-                                            <button class="thumb thumbs-up btn-primary" name="unlike" value=""><i class="fa fa-thumbs-o-up"></i></button>
-{#                                            <button class=" btn-primary" name="unlike" value=""><i class="fa fa-thumbs-o-up"></i> Unlike </button>#}
+                                            <button class="thumb thumbs-up btn-primary" name="unlike" value=""><i
+                                                    class="fa fa-thumbs-o-up"></i></button>
+                                            {#                                            <button class=" btn-primary" name="unlike" value=""><i class="fa fa-thumbs-o-up"></i> Unlike </button>#}
                                         {% endif %}
                                     </form>
                                 </div>
@@ -158,7 +197,28 @@
             </div>
         </div>
     </section>
-
+    <div class="modal" id="logoutModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-primary" style="margin-top: 25em;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4><i class="fa fa-lock" style="margin-right: 10px"></i>Log Out </h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+                    <p><i class="fa fa-question-circle"></i> Are you sure you want to log out? <br/></p>
+                    <div class="actionsBtns" style="text-align: center">
+                        <form action="/logout" method="POST">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                            {#                    <button type="submit" class="btn btn-default btn-primary" data-dismiss="modal">Logout</button>#}
+                            <a class="btn btn-primary nav__link" href="/logout" role="button"><span class="nav__item">Log out</span></a>
+                            <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 
 <script src="/static/js/app.js"></script>

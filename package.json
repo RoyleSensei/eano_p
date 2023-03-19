@@ -1,0 +1,7 @@
+{
+  "name": "eano_p",
+  "version": "1.0.0",
+  "dependencies": {
+    "echarts": "^5.4.1"
+  }
+}
