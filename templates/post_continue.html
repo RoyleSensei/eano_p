@@ -132,8 +132,8 @@
                 <div class="row">
                     <div class="col-6 col-md-4"
                          style="display: flex; align-items: center; justify-content: center; flex-direction: column">
-                        <form class="g-3 needs-validation" action="/post/create/{{ post_card["_id"] }}" method="POST"
-                              novalidate>
+                        <form class="g-3" action="/post/create/{{ post_card["_id"] }}" method="POST"
+                              enctype="multipart/form-data">
                             <div style="max-width: 540px; display: block; padding-bottom: 20px">
                                 <img src="{{ post_card["post_img_url"] }}" class="center" alt="user_post_img">
                             </div>

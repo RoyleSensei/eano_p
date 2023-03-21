@@ -304,6 +304,7 @@
                             <button class="btn" type="submit">Go</button>
                         </div>
                     </form>
+
                     <div style="border: 2px solid rgba(178,178,178, 0.2); margin: 0.5em; border-radius: 1rem;">
                         {% if admin_data["user_search_result"] is none or admin_data["user_search_result"] |length == 0 %}
                             <div style="display: flex; justify-content: center">
@@ -435,6 +436,7 @@
                     </div>
                 </div>
                 <div style="width: 1200px">
+
                     {#Post search bar & result#}
                     <form class="bd-search hidden-sm-down" action="/admin_post_search" method="POST">
                         <div class="input-group">
@@ -444,8 +446,15 @@
                             <button class="btn" type="submit">Go</button>
                         </div>
                     </form>
+
                     <div style="border: 2px solid rgba(178,178,178, 0.2); margin: 0.5em; border-radius: 1rem;">
-                        <table class="table">
+                        {% if admin_data["post_search_result"] is none or admin_data["post_search_result"] |length == 0 %}
+                            <div style="display: flex; justify-content: center">
+                                <h5 class="text-muted" style="padding: 100px"> No posts found here... </h5>
+                            </div>
+
+                        {% else %}
+                            <table class="table">
                             <thead>
                             <tr>
                                 <th scope="col">#</th>
@@ -457,35 +466,24 @@
                                 <th scope="col">Date</th>
                             </tr>
                             </thead>
-                            {% if admin_data["post_search_result"] is none or admin_data["post_search_result"] |length == 0 %}
+
+                            {% for post_card in admin_data["post_search_result"] %}
                                 <tbody>
                                 <tr>
-                                    <td>
-                                        <div class="row"
-                                             style="display: flex; align-items: center; justify-content: center;">
-                                            <h5 class="text-muted"> Nobody found here... </h5>
-                                        </div>
-                                    </td>
+                                    <th scope="row">{{ loop.index }}</th>
+                                    <td>{{ post_card["_id"] }}</td>
+                                    <td><img src="{{ post_card["author_avatar_url"] }}"
+                                             class="rounded-circle" style="object-fit : cover"
+                                             height="30"
+                                             width="30"></td>
+                                    <td>{{ post_card["author"] }}</td>
+                                    <td>{{ post_card["title"] }}</td>
+                                    <td>{{ post_card["rating"] }}</td>
+                                    <td>{{ post_card["date"] }}</td>
                                 </tr>
                                 </tbody>
-                            {% else %}
-                                {% for post_card in admin_data["post_search_result"] %}
-                                    <tbody>
-                                    <tr>
-                                        <th scope="row">{{ loop.index }}</th>
-                                        <td>{{ post_card["_id"] }}</td>
-                                        <td><img src="{{ post_card["author_avatar_url"] }}"
-                                                 class="rounded-circle" style="object-fit : cover"
-                                                 height="30"
-                                                 width="30"></td>
-                                        <td>{{ post_card["author"] }}</td>
-                                        <td>{{ post_card["title"] }}</td>
-                                        <td>{{ post_card["rating"] }}</td>
-                                        <td>{{ post_card["date"] }}</td>
-                                    </tr>
-                                    </tbody>
-                                {% endfor %}
-                            {% endif %}
+                            {% endfor %}
+                        {% endif %}
                         </table>
                     </div>
                 </div>

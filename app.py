@@ -327,33 +327,44 @@ def post_create_continue(pid):
     post = app.db.posts.find_one({"_id": ObjectId(pid)})
 
     if request.method == "POST":
-        if "cancel" in request.form:
-            return redirect(url_for("user_profile", nav="posts"))
+        if len(request.files) == 0:
+            if "cancel" in request.form:
+                return redirect(url_for("user_profile", nav="posts"))
+            else:
+                rating = request.form.get("user_post_rating")
+                title = request.form.get("user_post_title")
+                review = request.form.get("user_post_review")
+                formatted_date = datetime.datetime.today().strftime("%Y-%m-%d-%H:%M:%S")
+                app.db.posts.update_one(
+                    {"_id": ObjectId(pid)},
+                    {"$set": {
+                        "rating": rating,
+                        "title": title,
+                        "review": review,
+                        "date": formatted_date
+                    }},
+                    upsert=True
+                )
+                return redirect(url_for("user_profile", nav="posts", session=session))
+        else:
+            target = os.path.join(APP_ROOT, 'static/img/post_img/')  # folder_path
+            if not os.path.isdir(target):
+                os.mkdir(target)  # create folder if not exists
+            post_img_filename = None
+            for file in request.files.getlist("user_post_img"):
+                suffix = secure_filename(file.filename).split(".")[-1]
+                post_img_filename = str(uuid.uuid4()) + "." + suffix
+                file.save(target + post_img_filename)
 
-        elif "user_post_img" in request.form:
             app.db.posts.update_one(
                 {"_id": ObjectId(pid)},
                 {"$set": {
-                    "post_img_url": request.form.get("user_post_img")
+                    "post_img_url": '/static/img/post_img/' + post_img_filename
                 }}
             )
+            post["post_img_url"] = '/static/img/post_img/' + post_img_filename
             return render_template("post_continue.html", session=session, post_card=post)
-        else:
-            rating = request.form.get("user_post_rating")
-            title = request.form.get("user_post_title")
-            review = request.form.get("user_post_review")
-            formatted_date = datetime.datetime.today().strftime("%Y-%m-%d-%H:%M:%S")
-            app.db.posts.update_one(
-                {"_id": ObjectId(pid)},
-                {"$set": {
-                    "rating": rating,
-                    "title": title,
-                    "review": review,
-                    "date": formatted_date
-                }},
-                upsert=True
-            )
-            return redirect(url_for("user_profile", nav="posts", session=session))
+
     else:  # method == "GET"
         return render_template("post_continue.html", session=session, post_card=post)
 
@@ -724,8 +735,6 @@ def admin_user_search_result():
 def admin_post_search_result():
     keyword = request.form.get("keyword")
     return redirect("/admin?nav=posts&keyword=" + keyword)
-
-
 
 
 if __name__ == "__main__":
