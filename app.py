@@ -14,10 +14,12 @@ from flask import (
     url_for,
 )
 import datetime
+from dateutil.relativedelta import relativedelta
 from passlib.hash import pbkdf2_sha256
 from pymongo import MongoClient
 from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
+from collections import Counter
 
 users = {}
 
@@ -54,7 +56,7 @@ def admin_login_required(route):
         email = session.get("email")
         admin = app.db.admins.find_one({"email": email})
         if admin is None or admin["token"] != session.get("token"):
-            return redirect(url_for("login"))
+            return redirect(url_for("admin_login"))
         return route(*args, **kwargs)
 
     return route_wrapper
@@ -155,6 +157,15 @@ def logout():
                             upsert=True
                             )
     return redirect(url_for("login"))
+
+
+@app.route("/admin_logout")
+def admin_logout():
+    app.db.users.update_one({"email": session["email"]},
+                            {"$set": {"token": ""}},
+                            upsert=True
+                            )
+    return redirect(url_for("admin_login"))
 
 
 @app.route('/user_profile/', methods=["GET", "POST"])
@@ -497,7 +508,8 @@ def follow(uid):
         app.db.users.update_one(
             {"_id": ObjectId(uid)},
             {"$set": {
-                "followers": (following_user["followers"] if "followers" in following_user else []) + [session["uid"]]
+                "followers": (following_user["followers"] if "followers" in following_user else []) + [session["uid"]],
+                "followers_count": (following_user["followers_count"] if "followers_count" in following_user else 0) + 1
             }},
             upsert=True
         )
@@ -516,7 +528,8 @@ def follow(uid):
         app.db.users.update_one(
             {"_id": ObjectId(uid)},
             {"$set": {
-                "followers": (unfollowing_user["followers"])
+                "followers": (unfollowing_user["followers"]),
+                "followers_count": unfollowing_user["followers_count"] - 1
             }},
         )
     return redirect('/user/' + uid)
@@ -544,12 +557,12 @@ def admin_login():
             session["avatar_url"] = admin["avatar_url"]
             session["email"] = email
             session["token"] = token
-            app.db.users.update_one(
+            app.db.admins.update_one(
                 {"email": email},
                 {"$set": {"token": token}},
                 upsert=True
             )
-            return redirect(url_for("test"))
+            return redirect(url_for("admin_pages"))
         else:
             message = "Wrong email or password!"
             return render_template("admin_login.html", message=message)
@@ -563,15 +576,15 @@ def add_user_growth_chart(admin_data):
         "users_number": [],
     }
 
-    def getFirstDateOfRecentTwelveMonths():
-        return [datetime.datetime(*t) for t in [
-            (2022, 5, 1), (2022, 6, 1),
-            (2022, 7, 1), (2022, 8, 1), (2022, 9, 1), (2022, 10, 1),
-            (2022, 11, 1), (2022, 12, 1), (2023, 1, 1), (2023, 2, 1),
-            (2023, 3, 1), (2023, 4, 1)
-        ]]
+    def get_recent_6_months():
+        res = []
+        start_date = datetime.datetime.today() + relativedelta(months=1)
+        start_date = datetime.datetime(year=start_date.year, month=start_date.month, day=1)
+        for i in range(6):
+            res.insert(0, start_date + relativedelta(months=-i))
+        return res
 
-    for date in getFirstDateOfRecentTwelveMonths():
+    for date in get_recent_6_months():
         count = app.db.users.count_documents({
             "created_time": {
                 "$lt": date
@@ -581,7 +594,85 @@ def add_user_growth_chart(admin_data):
         admin_data["user_growth_chart"]["users_number"].append(count)
 
 
+def add_user_location_chart(admin_data):
+    agg_result = app.db.users.aggregate(
+        [{
+            "$group":
+                {"_id": "$state",
+                 "value": {"$sum": 1}
+                 }}
+        ])
+    data = ""
+    for row in agg_result:
+        if row['_id'] is None:
+            row['_id'] = 'Unknown'
+        data += "{" + "name: '{}', value: {}".format(row['_id'], row['value']) + "},"
+    data = "[" + data + "]"
+    admin_data["user_location_graph"] = data
+
+
+def add_user_age_chart(admin_data):
+    admin_data["user_age_chart"] = {}
+    all_users = [u for u in app.db.users.find({}) if "birthday" in u and u["birthday"] is not None]
+    for user in all_users:
+        user["age"] = relativedelta(
+            datetime.datetime.now(),
+            datetime.datetime.strptime(user["birthday"], "%Y-%m-%d")
+        ).years
+
+    ages_counter = {}
+    for user in all_users:
+        if user["age"] in ages_counter:
+            ages_counter[user["age"]] += 1
+        else:
+            ages_counter[user["age"]] = 1
+    admin_data["user_age_chart"]["ages"] = [_ for _ in ages_counter.keys()]
+    admin_data["user_age_chart"]["counts"] = [_ for _ in ages_counter.values()]
+
+
+def add_post_growth_chart(admin_data):
+    admin_data["post_growth_chart"] = {
+        "months": [],
+        "posts_number": [],
+    }
+
+    def get_recent_6_months():
+        res = []
+        start_date = datetime.datetime.today() + relativedelta(months=1)
+        start_date = datetime.datetime(year=start_date.year, month=start_date.month, day=1)
+        for i in range(6):
+            res.insert(0, start_date + relativedelta(months=-i))
+        return res
+
+    for date in get_recent_6_months():
+        count = app.db.posts.count_documents({
+            "date": {
+                "$lt": date.strftime("%Y-%m")
+            }
+        })
+        admin_data["post_growth_chart"]["months"].append(date.strftime("%Y-%m"))
+        admin_data["post_growth_chart"]["posts_number"].append(count)
+
+
+def add_post_rating_chart(admin_data):
+    agg_rating_result = app.db.posts.aggregate(
+        [{
+            "$group":
+                {"_id": "$rating",
+                 "value": {"$sum": 1}
+                 }}
+        ])
+    data = ""
+    for row in agg_rating_result:
+        if row['_id'] is None:
+            row['_id'] = 'Unknown'
+        data += "{" + "name: '{}', value: {}".format(row['_id'], row['value']) + "},"
+    data = "[" + data + "]"
+    admin_data["post_rating_chart"] = data
+
+
 @app.route('/admin', methods=['GET', 'POST'])
+@admin_login_required
 def admin_pages():
     nav = request.args.get("nav") if "nav" in request.args else "dashboard"
     admin_data = {}
@@ -590,23 +681,31 @@ def admin_pages():
         admin_data["users_number"] = app.db.users.count_documents({})
         admin_data["posts_number"] = app.db.posts.count_documents({})
         add_user_growth_chart(admin_data)
+        add_post_growth_chart(admin_data)
         return render_template('admin_page.html', admin_data=admin_data, nav=nav)
 
     elif nav == "users":
+        admin_data["users_number"] = app.db.users.count_documents({})
         keyword = request.args.get("keyword")
         if keyword is None:
             keyword = ""
         user_cards = [_ for _ in app.db.users.find({"username": {'$regex': ".*" + keyword + ".*", "$options": "i"}})]
-        admin_data = {"user_search_result": user_cards}
+        admin_data["user_search_result"] = user_cards
         add_user_growth_chart(admin_data)
+        add_user_age_chart(admin_data)
+        add_user_location_chart(admin_data)
         return render_template("admin_page.html", nav=nav, admin_data=admin_data)
 
     elif nav == "posts":
+        admin_data["posts_number"] = app.db.posts.count_documents({})
+
         keyword = request.args.get("keyword")
         if keyword is None:
             keyword = ""
         post_cards = [_ for _ in app.db.posts.find({"title": {'$regex': ".*" + keyword + ".*", "$options": "i"}})]
-        admin_data = {"post_search_result": post_cards}
+        admin_data["post_search_result"] = post_cards
+        add_post_growth_chart(admin_data)
+        add_post_rating_chart(admin_data)
         return render_template("admin_page.html", nav=nav, admin_data=admin_data)
 
     else:
@@ -614,22 +713,19 @@ def admin_pages():
 
 
 @app.route('/admin_user_search', methods=["POST"])
-# @admin_login_required
+@admin_login_required
 def admin_user_search_result():
     keyword = request.form.get("keyword")
     return redirect("/admin?nav=users&keyword=" + keyword)
 
 
 @app.route('/admin_post_search', methods=["POST"])
-# @admin_login_required
+@admin_login_required
 def admin_post_search_result():
     keyword = request.form.get("keyword")
     return redirect("/admin?nav=posts&keyword=" + keyword)
 
 
-@app.route('/test', methods=["GET", "POST"])
-def test():
-    return render_template('test.html')
 
 
 if __name__ == "__main__":
