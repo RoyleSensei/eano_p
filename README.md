@@ -64,11 +64,15 @@ of this project uses MongoDB.
     from werkzeug.utils import secure_filename
     from bson.objectid import ObjectId
 
+**Set MongoDB URI in .env**
+
+    MONGODB_URI=
+
 **Setup MongoDb:**
 
     app.config["MONGODB_URI"] = os.environ.get("MONGODB_URI")
     app.config["SECRET_KEY"] = os.environ.get(
-        "SECRET_KEY", "pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw"
+        "SECRET_KEY", secrets.token_urlsafe(16)
     )
     client = MongoClient("mongodb+srv://username:password@cluster0.zj6ekfz.mongodb.net/xxx")
     app.db = client.eano_community
