@@ -20,6 +20,9 @@ from pymongo import MongoClient
 from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
 from collections import Counter
+from dotenv import load_dotenv
+
+load_dotenv()
 
 users = {}
 
@@ -28,7 +31,7 @@ app.config["MONGODB_URI"] = os.environ.get("MONGODB_URI")
 app.config["SECRET_KEY"] = os.environ.get(
     "SECRET_KEY", "pf9Wkove4IKEAXvy-cQkeDPhv9Cb3Ag-wyJILbq_dFw"
 )
-client = MongoClient("mongodb+srv://zz3399:Zzf19971113@cluster0.zj6ekfz.mongodb.net/test")
+client = MongoClient(os.getenv("MONGODB_URI"))
 app.db = client.eano_community
 
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -161,10 +164,10 @@ def logout():
 
 @app.route("/admin_logout")
 def admin_logout():
-    app.db.users.update_one({"email": session["email"]},
-                            {"$set": {"token": ""}},
-                            upsert=True
-                            )
+    app.db.admins.update_one({"email": session["email"]},
+                             {"$set": {"token": ""}},
+                             upsert=True
+                             )
     return redirect(url_for("admin_login"))
 
 
