@@ -1,4 +1,8 @@
-flask
-python-dotenv
-pymongo[srv]
+flask~=2.2.2
+python-dotenv~=0.21.1
+pymongo[srv]~=4.3.3
 gunicorn
+
+python-dateutil~=2.8.2
+passlib~=1.7.4
+Werkzeug~=2.2.2

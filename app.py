@@ -9,7 +9,6 @@ from flask import (
     session,
     render_template,
     request,
-    flash,
     redirect,
     url_for,
 )
@@ -19,7 +18,6 @@ from passlib.hash import pbkdf2_sha256
 from pymongo import MongoClient
 from werkzeug.utils import secure_filename
 from bson.objectid import ObjectId
-from collections import Counter
 from dotenv import load_dotenv
 
 load_dotenv()
